@@ -1778,8 +1778,9 @@
       <span>Voltar</span>
     </button>
     <div class="modal-breadcrumb">Loja <span id="modal-breadcrumb-name"></span></div>
-    <div style="margin-left:auto">
+    <div style="margin-left:auto;display:flex;align-items:center;gap:.6rem;">
       <button class="modal-fav" id="modalFav" onclick="toggleFavFromModal()" title="Favoritar" style="position:static;transform:none;border:1px solid var(--border);width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface2);color:var(--muted);font-size:1rem;transition:all .2s;border-radius:3px;"></button>
+      <button onclick="closeModal()" title="Fechar" style="border:1px solid var(--border);background:var(--surface2);color:var(--muted);width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:3px;font-size:1.2rem;transition:all .2s;line-height:1;" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕</button>
     </div>
   </div>
 
@@ -1904,12 +1905,9 @@
       <a href="#novidades" class="btn-primary">Ver Coleção</a>
       <a href="#novidades" class="btn-ghost">Novidades</a>
     </div>
-
   </div>
   <div class="hero-visual">
-    <div class="jerseys-scene" id="jerseysScene">
-      <!-- Camisas renderizadas dinamicamente por renderHeroJerseys() -->
-    </div>
+    <img src="fotos/torrica_sports.jpg" alt="Torrica Sports" style="width:min(480px,90%);height:auto;filter:drop-shadow(0 0 50px rgba(255,140,0,.3));animation:float 5s ease-in-out infinite;" />
   </div>
 </section>
 
