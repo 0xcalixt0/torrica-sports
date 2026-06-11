@@ -748,30 +748,7 @@
   .recent-card-club { font-size: .62rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: .2rem; }
   .recent-card-price { font-family: "Bebas Neue", sans-serif; font-size: 1.2rem; color: var(--accent); }
 
-  /* HERO MANAGER */
-  .hero-mgr-modal { position: fixed; inset: 0; z-index: 600; background: rgba(0,0,0,.9); backdrop-filter: blur(8px); display: none; padding: 2rem 1rem; overflow-y: auto; }
-  .hero-mgr-modal.open { display: block; }
-  .hero-mgr-content { background: var(--surface); border: 1px solid var(--border); max-width: 820px; margin: 0 auto; border-radius: 6px; padding: 2rem; position: relative; }
-  .hero-mgr-content h2 { font-family: "Bebas Neue", sans-serif; font-size: 2rem; color: var(--accent); letter-spacing: .04em; margin-bottom: .3rem; }
-  .hero-mgr-sub { color: var(--muted); font-size: .85rem; margin-bottom: 1.5rem; }
-  .hero-mgr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-  @media(max-width:680px){ .hero-mgr-grid { grid-template-columns: repeat(2, 1fr); } }
-  .hm-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; display: flex; flex-direction: column; gap: .7rem; }
-  .hm-preview { width: 100%; height: 150px; border-radius: 6px; background: var(--bg); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border: 1px dashed var(--border); }
-  .hm-preview img { max-width: 90%; max-height: 90%; object-fit: contain; }
-  .hm-preview .hm-empty { color: var(--muted); font-size: .75rem; text-align: center; padding: .5rem; }
-  .hm-preview svg { width: 80%; height: 80%; }
-  .hm-field { display: flex; flex-direction: column; gap: .25rem; }
-  .hm-field label { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
-  .hm-field input { background: var(--input-bg); border: 1px solid var(--border); border-radius: 5px; padding: .5rem; color: var(--text); font-family: "DM Sans", sans-serif; font-size: .82rem; }
-  .hm-field input:focus { outline: none; border-color: var(--accent); }
-  .hm-actions { display: flex; gap: .4rem; }
-  .hm-btn { flex: 1; border: none; border-radius: 5px; padding: .55rem; font-size: .72rem; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: .05em; transition: opacity .2s; }
-  .hm-btn:hover { opacity: .85; }
-  .hm-btn-upload { background: var(--accent); color: #000; }
-  .hm-btn-reset { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
-  .hero-mgr-foot { margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-  .hero-mgr-note { font-size: .75rem; color: var(--muted); max-width: 460px; line-height: 1.5; }
+
 
   /* ADMIN ORDERS PANEL */
   .admin-orders-modal {
@@ -922,32 +899,7 @@
   .admin-banner button:hover { background: #1a1a1a; }
   .admin-info { display: flex; align-items: center; gap: .5rem; }
 
-  /* Upload overlay on product cards */
-  .product-card .admin-upload {
-    position: absolute; inset: 0; z-index: 5;
-    background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    gap: .6rem; cursor: pointer; transition: background .2s;
-  }
-  body.admin .product-card .admin-upload { display: flex; }
-  .product-card .admin-upload:hover { background: rgba(255,140,0,.25); }
-  .admin-upload-icon { font-size: 2.2rem; }
-  .admin-upload-label {
-    font-size: .75rem; color: #fff; font-weight: 500;
-    text-transform: uppercase; letter-spacing: .12em;
-    text-align: center; padding: 0 1rem;
-  }
-  .admin-upload .admin-remove {
-    position: absolute; top: 8px; right: 8px;
-    background: var(--accent2); color: #fff; border: none;
-    width: 28px; height: 28px; border-radius: 50%;
-    font-size: .9rem; cursor: pointer;
-    display: none; align-items: center; justify-content: center;
-  }
-  .product-card.has-photo .admin-upload .admin-remove { display: flex; }
-  .product-card.has-photo .admin-upload-label::before { content: "✓ Foto adicionada — clique pra trocar"; }
-  .product-card.has-photo .admin-upload-label { font-size: 0; }
-  .product-card.has-photo .admin-upload-label::before { font-size: .72rem; }
+
 
 
 
@@ -1371,42 +1323,7 @@
   .zoom-close:hover { background: var(--accent2); border-color: var(--accent2); }
 
   /* ADMIN — 5 photo slots */
-  .admin-upload {
-    display: none !important;
-  }
-  body.admin .product-card .admin-slots {
-    position: absolute; inset: 0; z-index: 5;
-    background: rgba(0,0,0,.78); backdrop-filter: blur(4px);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: .5rem; padding: .8rem;
-  }
-  .product-card .admin-slots { display: none; }
-  .admin-slots-label {
-    font-size: .68rem; color: #fff; font-weight: 500;
-    text-transform: uppercase; letter-spacing: .12em; text-align: center; margin-bottom: .3rem;
-  }
-  .admin-slot-row { display: flex; gap: .3rem; flex-wrap: wrap; justify-content: center; }
-  .admin-slot {
-    width: 44px; height: 52px; border-radius: 4px;
-    background: rgba(255,255,255,.06); border: 1px dashed rgba(255,255,255,.25);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
-    font-size: 1.1rem; color: rgba(255,255,255,.5);
-  }
-  .admin-slot:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,140,0,.1); }
-  .admin-slot.filled { border-style: solid; border-color: var(--accent); }
-  .admin-slot.filled .admin-slot-num { display: none; }
-  .admin-slot img {
-    width: 100%; height: 100%; object-fit: cover;
-  }
-  .admin-slot .slot-remove {
-    position: absolute; top: 2px; right: 2px;
-    background: var(--accent2); color: #fff; border: none;
-    width: 16px; height: 16px; border-radius: 50%; font-size: .65rem;
-    cursor: pointer; display: none; align-items: center; justify-content: center;
-    line-height: 1;
-  }
-  .admin-slot.filled .slot-remove { display: flex; }
+
 
   /* ─── LIGHT MODE OVERRIDES ─────────────────────────────────── */
   body.light-mode .jersey-mini { filter: drop-shadow(0 12px 24px rgba(0,0,0,.15)); }
@@ -1672,15 +1589,11 @@
 
 <div class="admin-banner" id="adminBanner">
   <div class="admin-info">
-    <span>🔧 MODO ADMIN ATIVO — clique em qualquer camisa pra adicionar foto</span>
-    <span id="storageInfo" style="font-weight:400;font-size:.7rem;opacity:.8;"></span>
+    <span>🔧 MODO ADMIN ATIVO</span>
   </div>
   <div>
     <button onclick="openAdminOrders()">📦 Pedidos</button>
-    <button onclick="openHeroManager()">👕 Camisas Hero</button>
     <button onclick="openCouponManager()">🎟️ Cupons</button>
-    <button onclick="exportPhotos()">📦 Backup</button>
-    <button onclick="importPhotos()">📂 Importar</button>
     <button onclick="toggleAdmin()">✕ Sair</button>
   </div>
 </div>
@@ -1703,22 +1616,6 @@
     </div>
 
     <div id="aoOrdersList"></div>
-  </div>
-</div>
-
-<!-- HERO JERSEYS MANAGER MODAL -->
-<div class="hero-mgr-modal" id="heroMgrModal">
-  <div class="hero-mgr-content">
-    <button class="auth-close" onclick="closeHeroManager()">✕</button>
-    <h2>👕 Camisas do Hero</h2>
-    <p class="hero-mgr-sub">Personalize as 6 camisas que aparecem animadas no topo do site. Envie suas próprias imagens (de preferência PNG com fundo transparente).</p>
-
-    <div class="hero-mgr-grid" id="heroMgrGrid"></div>
-
-    <div class="hero-mgr-foot">
-      <p class="hero-mgr-note">💡 As imagens ficam salvas no seu navegador. Use o botão "Backup" no topo para exportar tudo, ou "Resetar" em cada camisa para voltar ao desenho padrão.</p>
-      <button class="hm-btn hm-btn-reset" style="flex:none;padding:.6rem 1.2rem" onclick="resetAllHeroJerseys()">↺ Resetar todas</button>
-    </div>
   </div>
 </div>
 
@@ -1759,9 +1656,6 @@
     </div>
   </div>
 </div>
-<input type="file" id="importFile" accept=".json" style="display:none">
-<input type="file" id="uploadFile" accept="image/*" style="display:none">
-<input type="file" id="heroUploadFile" accept="image/*" style="display:none">
 
 
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
@@ -2109,7 +2003,7 @@ const products = [
   { id:10, club:'Grêmio', name:'Camisa I 2025/26', price:139, badge:null, color1:'#0a4ea2', color2:'#0a1a3d', num:'10', cat:'brasil' },
   { id:13, club:'Atlético Mineiro', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#1a1a1a', color2:'#3d3d3d', num:'9', cat:'brasil' },
   { id:14, club:'Cruzeiro', name:'Camisa I 2025/26', price:139, badge:null, color1:'#003da5', color2:'#001a52', num:'10', cat:'brasil' },
-  { id:15, club:'Internacional', name:'Reserva Torcedor 2026', price:139, badge:'new', color1:'#f5f5f5', color2:'#c8102e', num:'7', cat:'brasil', images:['fotos/internacional-reserva-torcedor1.jpg','fotos/internacional-reserva-torcedor2.jpg','fotos/internacional-reserva-torcedor3.jpg'] },
+  { id:15, club:'Internacional', name:'Camisa I 2025/26', price:139, badge:null, color1:'#c8102e', color2:'#5a0a14', num:'7', cat:'brasil' },
   { id:16, club:'Fluminense', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#7a1d2e', color2:'#0a4d2e', num:'10', cat:'brasil' },
   { id:17, club:'Botafogo', name:'Camisa I 2025/26', price:139, badge:null, color1:'#0a0a0a', color2:'#2a2a2a', num:'7', cat:'brasil' },
   { id:18, club:'Athletico-PR', name:'Camisa I 2025/26', price:139, badge:null, color1:'#c8102e', color2:'#1a1a1a', num:'9', cat:'brasil' },
@@ -2186,27 +2080,9 @@ function cardHTML(p, source, extraBadge) {
          <div class="jersey-mini-stripes"></div>
          <div class="jersey-mini-num">${p.num}</div>
        </div>`;
-  const slot = (i) => {
-    const thumb = imgs[i];
-    return thumb
-      ? `<div class="admin-slot filled" onclick="event.stopPropagation();pickPhoto(${p.id},'${source}',${i})">
-           <img src="${thumb}" alt="">
-           <button class="slot-remove" onclick="event.stopPropagation();removePhotoSlot(${p.id},'${source}',${i})">✕</button>
-         </div>`
-      : `<div class="admin-slot" onclick="event.stopPropagation();pickPhoto(${p.id},'${source}',${i})">
-           <span class="admin-slot-num">+</span>
-         </div>`;
-  };
-  const adminOverlay = `
-    <div class="admin-slots" onclick="event.stopPropagation()">
-      <div class="admin-slots-label">${p.club}</div>
-      <div class="admin-slot-row">${slot(0)}${slot(1)}${slot(2)}${slot(3)}${slot(4)}</div>
-    </div>`;
-  const hasPhotoClass = firstImg ? ' has-photo' : '';
   const favClass = isFaved(p.id, source) ? ' faved' : '';
   return `
-    <div class="product-card${hasPhotoClass}" onclick="openModal(${p.id},'${source}')">
-      ${adminOverlay}
+    <div class="product-card" onclick="openModal(${p.id},'${source}')">
       <div class="card-img" style="background:linear-gradient(160deg,${p.color1}22,${p.color2}44)">
         <button class="fav-btn${favClass}" onclick="event.stopPropagation();toggleFav(${p.id},'${source}',this)" title="Favoritar"></button>
         ${visual}
@@ -3311,276 +3187,35 @@ function closeZoom() {
 document.getElementById('modal-photo').style.transition = 'opacity .2s';
 
 // ========== ADMIN MODE — adicione fotos arrastando do computador ==========
-const ADMIN_KEY = 'torrica_admin_photos';
+
 
 function getImages(p) {
-  // Returns an array of up to 3 image URLs
   if (Array.isArray(p.images)) return p.images.filter(Boolean);
   if (p.image) return [p.image];
   return [];
 }
 
-function loadStoredPhotos() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(ADMIN_KEY) || '{}');
-    [...products, ...selecoesProducts, ...retroProducts].forEach(p => {
-      const val = stored[p.id];
-      if (!val) return;
-      // Migrate legacy single-string format to array
-      p.images = Array.isArray(val) ? val.filter(Boolean) : [val];
-    });
-    return stored;
-  } catch(e) { return {}; }
-}
-
-function savePhotoSlot(productId, slotIndex, dataUrl) {
-  const stored = JSON.parse(localStorage.getItem(ADMIN_KEY) || '{}');
-  let arr = stored[productId];
-  if (!Array.isArray(arr)) arr = arr ? [arr] : [];
-  while (arr.length < 5) arr.push(null);
-  arr[slotIndex] = dataUrl;
-  stored[productId] = arr;
-  try {
-    localStorage.setItem(ADMIN_KEY, JSON.stringify(stored));
-    updateStorageInfo();
-    return true;
-  } catch(e) {
-    alert('Armazenamento cheio! Faça backup e remova fotos antigas. (Limite ~5MB do navegador)');
-    return false;
-  }
-}
-
-function removePhotoSlotStorage(productId, slotIndex) {
-  const stored = JSON.parse(localStorage.getItem(ADMIN_KEY) || '{}');
-  let arr = stored[productId];
-  if (!Array.isArray(arr)) return;
-  arr[slotIndex] = null;
-  // Clean up trailing nulls
-  while (arr.length && !arr[arr.length-1]) arr.pop();
-  if (arr.length === 0) delete stored[productId];
-  else stored[productId] = arr;
-  localStorage.setItem(ADMIN_KEY, JSON.stringify(stored));
-  updateStorageInfo();
-}
-
-// ========== HERO JERSEYS SYSTEM ==========
-const HERO_KEY = 'torrica_hero_jerseys';
-
-// Camisas padrão (SVG desenhado). cada uma tem nome, badge, cor do glow e o SVG.
-const defaultHeroJerseys = [
-  { name: 'Flamengo',   badge: 'Brasileirão', glow: '#c8102e',
-    svg: `<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gFla" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e01030"/><stop offset="100%" stop-color="#8a0a1e"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gFla)" stroke="#000" stroke-width="3"/><rect x="70" y="150" width="160" height="34" fill="#000"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#000" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#fff">10</text></svg>` },
-  { name: 'Palmeiras',  badge: 'Brasileirão', glow: '#00813b',
-    svg: `<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gPal" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#00a84f"/><stop offset="100%" stop-color="#005c2b"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gPal)" stroke="#fff" stroke-width="3"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#fff" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#fff">9</text></svg>` },
-  { name: 'Corinthians', badge: 'Brasileirão', glow: '#888',
-    svg: `<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gCor" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#dcdcdc"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gCor)" stroke="#000" stroke-width="3"/><rect x="70" y="105" width="160" height="14" fill="#000"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#000" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#000">7</text></svg>` },
-  { name: 'Real Madrid', badge: 'La Liga', glow: '#d4af37',
-    svg: `<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gReal" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e8e8ec"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gReal)" stroke="#c8a24a" stroke-width="3"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#c8a24a" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#1a3a8f">11</text></svg>` },
-  { name: 'Barcelona', badge: 'La Liga', glow: '#a50044',
-    svg: `<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="gBar" width="44" height="10" patternUnits="userSpaceOnUse"><rect width="22" height="10" fill="#a50044"/><rect x="22" width="22" height="10" fill="#004d98"/></pattern></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" transform="rotate(90 150 160)" fill="url(#gBar)" stroke="#ffce00" stroke-width="3"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#ffce00" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#ffce00">8</text></svg>` },
-  { name: 'Brasil', badge: 'Seleções', glow: '#ffdf00',
-    svg: `<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBra" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffe21f"/><stop offset="100%" stop-color="#f0c800"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gBra)" stroke="#009c3b" stroke-width="4"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#009c3b" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#009c3b">10</text></svg>` }
-];
-
-// Lê as customizações salvas (overrides por índice)
-function getHeroOverrides() {
-  try { return JSON.parse(localStorage.getItem(HERO_KEY) || '{}'); }
-  catch(e) { return {}; }
-}
-function saveHeroOverrides(data) {
-  localStorage.setItem(HERO_KEY, JSON.stringify(data));
-}
-
-// Retorna a camisa final (padrão + override) de um índice
-function getHeroJersey(i) {
-  const ov = getHeroOverrides()[i] || {};
-  const base = defaultHeroJerseys[i] || {};
-  return {
-    name:  ov.name  != null ? ov.name  : base.name,
-    badge: ov.badge != null ? ov.badge : base.badge,
-    glow:  ov.glow  || base.glow,
-    image: ov.image || null,
-    svg:   base.svg
-  };
-}
-
-// Renderiza as 6 camisas no hero
+// ========== HERO JERSEYS (SVG fixos) ==========
 function renderHeroJerseys() {
   const scene = document.getElementById('jerseysScene');
   if (!scene) return;
-  let html = '';
-  for (let i = 0; i < 6; i++) {
-    const j = getHeroJersey(i);
-    const visual = j.image
-      ? `<img class="jersey-photo-custom" src="${j.image}" alt="${j.name}">`
-      : j.svg;
-    html += `
-      <div class="jersey-card">
-        <div class="jersey-glow" style="background:${j.glow}"></div>
-        ${visual}
-        <div class="jersey-info">
-          <span class="jname">${j.name || ''}</span>
-          <span class="jbadge">${j.badge || ''}</span>
-        </div>
-      </div>`;
-  }
-  scene.innerHTML = html;
-}
-
-// ----- Modal de gerenciamento -----
-function openHeroManager() {
-  renderHeroMgrGrid();
-  document.getElementById('heroMgrModal').classList.add('open');
-}
-function closeHeroManager() {
-  document.getElementById('heroMgrModal').classList.remove('open');
-}
-
-function renderHeroMgrGrid() {
-  const grid = document.getElementById('heroMgrGrid');
-  if (!grid) return;
-  let html = '';
-  for (let i = 0; i < 6; i++) {
-    const j = getHeroJersey(i);
-    const preview = j.image
-      ? `<img src="${j.image}" alt="">`
-      : (j.svg || `<span class="hm-empty">Sem imagem</span>`);
-    html += `
-      <div class="hm-card">
-        <div class="hm-preview">${preview}</div>
-        <div class="hm-field">
-          <label>Nome do clube</label>
-          <input type="text" value="${(j.name||'').replace(/"/g,'&quot;')}" oninput="updateHeroField(${i},'name',this.value)">
-        </div>
-        <div class="hm-field">
-          <label>Categoria</label>
-          <input type="text" value="${(j.badge||'').replace(/"/g,'&quot;')}" oninput="updateHeroField(${i},'badge',this.value)">
-        </div>
-        <div class="hm-actions">
-          <button class="hm-btn hm-btn-upload" onclick="pickHeroPhoto(${i})">📷 Imagem</button>
-          <button class="hm-btn hm-btn-reset" onclick="resetHeroJersey(${i})">↺ Padrão</button>
-        </div>
-      </div>`;
-  }
-  grid.innerHTML = html;
-}
-
-// Atualiza nome/badge de uma camisa
-function updateHeroField(i, field, value) {
-  const ov = getHeroOverrides();
-  ov[i] = ov[i] || {};
-  ov[i][field] = value;
-  saveHeroOverrides(ov);
-  renderHeroJerseys();
-}
-
-// Upload de imagem para uma camisa
-let pendingHeroIndex = null;
-function pickHeroPhoto(i) {
-  pendingHeroIndex = i;
-  document.getElementById('heroUploadFile').click();
-}
-
-document.getElementById('heroUploadFile').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file || pendingHeroIndex === null) return;
-  processImage(file, dataUrl => {
-    const ov = getHeroOverrides();
-    ov[pendingHeroIndex] = ov[pendingHeroIndex] || {};
-    ov[pendingHeroIndex].image = dataUrl;
-    saveHeroOverrides(ov);
-    renderHeroJerseys();
-    renderHeroMgrGrid();
-    pendingHeroIndex = null;
-    e.target.value = '';
-  });
-});
-
-// Reseta uma camisa para o padrão
-function resetHeroJersey(i) {
-  const ov = getHeroOverrides();
-  delete ov[i];
-  saveHeroOverrides(ov);
-  renderHeroJerseys();
-  renderHeroMgrGrid();
-}
-
-// Reseta todas
-function resetAllHeroJerseys() {
-  if (!confirm('Voltar todas as camisas ao desenho padrão? As imagens enviadas serão removidas.')) return;
-  localStorage.removeItem(HERO_KEY);
-  renderHeroJerseys();
-  renderHeroMgrGrid();
-}
-
-// Resize and compress image before storing
-function processImage(file, callback) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      const maxW = 600;
-      const scale = Math.min(1, maxW / img.width);
-      const w = img.width * scale;
-      const h = img.height * scale;
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = 'transparent';
-      ctx.fillRect(0,0,w,h);
-      ctx.drawImage(img, 0, 0, w, h);
-      // Try PNG (preserves transparency), fallback to JPEG if too large
-      let dataUrl = canvas.toDataURL('image/png');
-      if (dataUrl.length > 250000) {
-        dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      }
-      callback(dataUrl);
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-let pendingProduct = null;
-function pickPhoto(productId, source, slotIndex) {
-  pendingProduct = { id: productId, source: source, slot: slotIndex || 0 };
-  document.getElementById('uploadFile').click();
-}
-
-document.getElementById('uploadFile').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file || !pendingProduct) return;
-  processImage(file, dataUrl => {
-    if (savePhotoSlot(pendingProduct.id, pendingProduct.slot, dataUrl)) {
-      // Update in-memory product
-      [...products, ...selecoesProducts, ...retroProducts].forEach(p => {
-        if (p.id !== pendingProduct.id) return;
-        if (!Array.isArray(p.images)) p.images = p.image ? [p.image] : [];
-        while (p.images.length < 5) p.images.push(null);
-        p.images[pendingProduct.slot] = dataUrl;
-        delete p.image;
-      });
-      renderProducts();
-    }
-    pendingProduct = null;
-    e.target.value = '';
-  });
-});
-
-function removePhotoSlot(productId, source, slotIndex) {
-  if (!confirm('Remover esta foto?')) return;
-  removePhotoSlotStorage(productId, slotIndex);
-  [...products, ...selecoesProducts, ...retroProducts].forEach(p => {
-    if (p.id !== productId) return;
-    if (Array.isArray(p.images)) {
-      p.images[slotIndex] = null;
-      while (p.images.length && !p.images[p.images.length-1]) p.images.pop();
-      if (p.images.length === 0) delete p.images;
-    } else if (slotIndex === 0) {
-      delete p.image;
-    }
-  });
-  renderProducts();
+  const jerseys = [
+    { name:'Flamengo',   badge:'Brasileirão', glow:'#c8102e', svg:`<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gFla" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e01030"/><stop offset="100%" stop-color="#8a0a1e"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gFla)" stroke="#000" stroke-width="3"/><rect x="70" y="150" width="160" height="34" fill="#000"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#000" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#fff">10</text></svg>` },
+    { name:'Palmeiras',  badge:'Brasileirão', glow:'#00813b', svg:`<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gPal" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#00a84f"/><stop offset="100%" stop-color="#005c2b"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gPal)" stroke="#fff" stroke-width="3"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#fff" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#fff">9</text></svg>` },
+    { name:'Corinthians', badge:'Brasileirão', glow:'#888',    svg:`<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gCor" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#dcdcdc"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gCor)" stroke="#000" stroke-width="3"/><rect x="70" y="105" width="160" height="14" fill="#000"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#000" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#000">7</text></svg>` },
+    { name:'Real Madrid', badge:'La Liga',     glow:'#d4af37', svg:`<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gReal" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e8e8ec"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gReal)" stroke="#c8a24a" stroke-width="3"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#c8a24a" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#1a3a8f">11</text></svg>` },
+    { name:'Barcelona',  badge:'La Liga',     glow:'#a50044', svg:`<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="gBar" width="44" height="10" patternUnits="userSpaceOnUse"><rect width="22" height="10" fill="#a50044"/><rect x="22" width="22" height="10" fill="#004d98"/></pattern></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" transform="rotate(90 150 160)" fill="url(#gBar)" stroke="#ffce00" stroke-width="3"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#ffce00" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#ffce00">8</text></svg>` },
+    { name:'Brasil',     badge:'Seleções',    glow:'#ffdf00', svg:`<svg class="jersey-svg" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gBra" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffe21f"/><stop offset="100%" stop-color="#f0c800"/></linearGradient></defs><path d="M95 25 L60 45 L20 80 L45 120 L70 105 L70 300 Q150 312 230 300 L230 105 L255 120 L280 80 L240 45 L205 25 Q150 55 95 25 Z" fill="url(#gBra)" stroke="#009c3b" stroke-width="4"/><path d="M120 25 Q150 50 180 25" fill="none" stroke="#009c3b" stroke-width="6"/><text x="150" y="240" text-anchor="middle" class="jersey-num-big" fill="#009c3b">10</text></svg>` },
+  ];
+  scene.innerHTML = jerseys.map(j => `
+    <div class="jersey-card">
+      <div class="jersey-glow" style="background:${j.glow}"></div>
+      ${j.svg}
+      <div class="jersey-info">
+        <span class="jname">${j.name}</span>
+        <span class="jbadge">${j.badge}</span>
+      </div>
+    </div>`).join('');
 }
 
 function toggleAdmin() {
@@ -3600,64 +3235,9 @@ function toggleAdmin() {
   }
   document.body.classList.add('admin');
   localStorage.setItem('torrica_admin_mode', '1');
-  updateStorageInfo();
 }
 
-function updateStorageInfo() {
-  const stored = localStorage.getItem(ADMIN_KEY) || '{}';
-  const count = Object.keys(JSON.parse(stored)).length;
-  const sizeKB = Math.round(stored.length / 1024);
-  const el = document.getElementById('storageInfo');
-  if (el) el.textContent = `${count} fotos • ${sizeKB} KB usados`;
-}
 
-function exportPhotos() {
-  const photos = JSON.parse(localStorage.getItem(ADMIN_KEY) || '{}');
-  const hero = JSON.parse(localStorage.getItem(HERO_KEY) || '{}');
-  // Mantém compatibilidade: fotos no nível raiz + chave especial pro hero
-  const backup = {...photos, __hero_jerseys__: hero};
-  const blob = new Blob([JSON.stringify(backup)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'torrica-fotos-backup.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importPhotos() {
-  document.getElementById('importFile').click();
-}
-
-document.getElementById('importFile').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const imported = JSON.parse(ev.target.result);
-      // Extrai camisas do hero, se houver
-      let heroCount = 0;
-      if (imported.__hero_jerseys__) {
-        localStorage.setItem(HERO_KEY, JSON.stringify(imported.__hero_jerseys__));
-        heroCount = Object.keys(imported.__hero_jerseys__).length;
-        delete imported.__hero_jerseys__;
-        renderHeroJerseys();
-      }
-      const current = JSON.parse(localStorage.getItem(ADMIN_KEY) || '{}');
-      const merged = {...current, ...imported};
-      localStorage.setItem(ADMIN_KEY, JSON.stringify(merged));
-      loadStoredPhotos();
-      renderProducts();
-      updateStorageInfo();
-      const extra = heroCount ? ` + ${heroCount} camisas do hero` : '';
-      alert(`✓ ${Object.keys(imported).length} fotos importadas${extra} com sucesso!`);
-    } catch(err) {
-      alert('Erro ao importar: arquivo inválido.');
-    }
-    e.target.value = '';
-  };
-  reader.readAsText(file);
-});
 
 // Keyboard shortcut: Ctrl+Shift+A toggles admin mode
 document.addEventListener('keydown', e => {
@@ -3667,12 +3247,10 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Auto-restore admin mode and photos on page load
-loadStoredPhotos();
+// Auto-restore admin mode on page load
 if (localStorage.getItem('torrica_admin_mode') === '1') {
   document.body.classList.add('admin');
 }
-updateStorageInfo();
 renderProducts();
 renderHeroJerseys();
 
