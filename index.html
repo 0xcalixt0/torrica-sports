@@ -296,7 +296,12 @@
   .overlay { position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px); }
   .overlay.visible { opacity:1;pointer-events:all; }
 
-  /* Página de produto em tela cheia */
+  /* =============================================
+     PÁGINA DE PRODUTO — E-COMMERCE MODERNO
+     Layout: galeria sticky esquerda | info direita
+     ============================================= */
+
+  /* Página ocupa 100% da tela */
   .modal {
     position: fixed;
     inset: 0;
@@ -304,8 +309,8 @@
     background: var(--bg);
     opacity: 0;
     pointer-events: none;
-    transition: opacity .3s ease, transform .35s cubic-bezier(.4,0,.2,1);
-    transform: translateY(30px);
+    transition: opacity .28s ease, transform .32s cubic-bezier(.4,0,.2,1);
+    transform: translateY(24px);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -316,213 +321,314 @@
     transform: translateY(0);
   }
 
-  /* Barra de topo da página de produto */
+  /* ─── TOPBAR ─── */
   .modal-topbar {
     position: sticky;
     top: 0;
-    z-index: 10;
-    background: var(--surface);
+    z-index: 20;
+    height: 56px;
+    background: var(--bg);
     border-bottom: 1px solid var(--border);
-    padding: .85rem 2rem;
+    padding: 0 2rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem;
   }
   .modal-back-btn {
     background: none;
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: .45rem 1rem .45rem .7rem;
+    border: none;
+    color: var(--muted);
+    padding: .3rem .5rem .3rem 0;
     font-family: "DM Sans", sans-serif;
     font-size: .82rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: .4rem;
-    transition: all .2s;
-    border-radius: 3px;
-    letter-spacing: .04em;
+    gap: .35rem;
+    transition: color .18s;
+    letter-spacing: .02em;
   }
-  .modal-back-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .modal-back-btn svg { width: 14px; height: 14px; }
+  .modal-back-btn:hover { color: var(--text); }
+  .modal-back-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
   .modal-breadcrumb {
-    font-size: .78rem;
+    font-size: .75rem;
     color: var(--muted);
-    letter-spacing: .06em;
+    letter-spacing: .04em;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .modal-breadcrumb::before {
+    content: '/';
+    opacity: .4;
   }
   .modal-breadcrumb span { color: var(--text); }
 
-  /* Layout principal: galeria esquerda + info direita */
+  /* ─── GRID PRINCIPAL ─── */
   .modal-inner {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: calc(100vh - 57px);
-    max-width: 1280px;
+    grid-template-columns: 55% 45%;
+    min-height: calc(100vh - 56px);
+    max-width: 1400px;
     margin: 0 auto;
     width: 100%;
   }
 
-  /* Coluna esquerda — galeria grande e sticky */
+  /* ─── COLUNA ESQUERDA: GALERIA ─── */
   .modal-img {
     position: sticky;
-    top: 57px;
-    height: calc(100vh - 57px);
+    top: 56px;
+    height: calc(100vh - 56px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 2.5rem;
+    padding: 2.5rem 3rem;
     background: var(--surface);
     border-right: 1px solid var(--border);
-    gap: 1.5rem;
+    gap: 1.2rem;
+    overflow: hidden;
   }
 
-  /* Foto principal — muito maior agora */
+  /* Área da foto principal */
+  .modal-img-main {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Foto principal — grande, sem máximos restritivos */
   .modal-photo {
-    max-width: 100% !important;
-    max-height: 68vh !important;
-    width: auto;
-    height: auto;
+    max-width: 92% !important;
+    max-height: calc(100vh - 230px) !important;
+    width: auto !important;
+    height: auto !important;
     object-fit: contain;
-    filter: drop-shadow(0 32px 60px rgba(0,0,0,.55));
+    filter: drop-shadow(0 28px 56px rgba(0,0,0,.5));
     cursor: zoom-in;
-    transition: transform .3s ease;
-    border-radius: 4px;
+    transition: transform .35s cubic-bezier(.25,.46,.45,.94);
+    display: block;
   }
-  .modal-photo:hover { transform: scale(1.02); }
+  .modal-photo:hover { transform: scale(1.025); }
 
+  /* Jersey placeholder quando não há foto */
   .modal-jersey {
-    width: 220px;
-    height: 255px;
-    border-radius: 0 0 32px 32px;
+    width: 240px;
+    height: 280px;
+    border-radius: 0 0 36px 36px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 32px 64px rgba(0,0,0,.6);
+    box-shadow: 0 32px 64px rgba(0,0,0,.55);
     animation: float 4s ease-in-out infinite;
+    flex-shrink: 0;
   }
   .modal-jersey-num {
     font-family: "Bebas Neue", sans-serif;
-    font-size: 7rem;
-    color: rgba(255,255,255,.08);
+    font-size: 7.5rem;
+    color: rgba(255,255,255,.07);
     position: absolute;
-    bottom: 0;
+    bottom: -4px;
     right: 8px;
     line-height: 1;
+    pointer-events: none;
   }
 
-  /* Thumbnails — miniaturas das fotos extras */
-  .modal-thumbs {
+  /* Thumbnails strip na base da galeria */
+  .modal-thumbstrip {
     display: flex;
-    gap: .6rem;
-    flex-wrap: wrap;
+    gap: .5rem;
+    flex-shrink: 0;
+    align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
   }
   .modal-thumb {
-    width: 64px;
-    height: 64px;
+    width: 58px;
+    height: 58px;
     object-fit: cover;
-    border: 2px solid var(--border);
-    border-radius: 4px;
+    border: 2px solid transparent;
+    border-radius: 6px;
     cursor: pointer;
-    opacity: .6;
+    opacity: .5;
     transition: all .2s;
+    background: var(--surface2);
   }
-  .modal-thumb:hover, .modal-thumb.active { opacity: 1; border-color: var(--accent); }
+  .modal-thumb:hover { opacity: .85; border-color: var(--border); }
+  .modal-thumb.active { opacity: 1; border-color: var(--accent); }
 
-  /* Coluna direita — informações de compra com scroll */
+  /* ─── COLUNA DIREITA: INFORMAÇÕES ─── */
   .modal-body {
-    padding: 3.5rem 3rem 5rem;
+    padding: 3.2rem 3rem 5rem 3.5rem;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
+
+  /* Badge / categoria */
   .modal-club {
-    font-size: .72rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .68rem;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: .22em;
     color: var(--accent);
-    margin-bottom: .5rem;
+    margin-bottom: 1rem;
+    background: rgba(255,140,0,.08);
+    border: 1px solid rgba(255,140,0,.2);
+    padding: .3rem .8rem;
+    border-radius: 20px;
+    width: fit-content;
   }
+
+  /* Nome do produto */
   .modal-name {
     font-family: "Bebas Neue", sans-serif;
-    font-size: 3rem;
+    font-size: 2.8rem;
     line-height: 1;
-    margin-bottom: .6rem;
+    letter-spacing: .02em;
+    margin-bottom: .7rem;
+    color: var(--text);
   }
+
+  /* Avaliações inline */
+  .modal-rating-summary {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: 1.5rem;
+    font-size: .82rem;
+  }
+
+  /* Separador decorativo */
+  .modal-divider {
+    width: 48px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  /* Descrição */
   .modal-desc {
-    font-size: .9rem;
+    font-size: .88rem;
     color: var(--muted);
-    line-height: 1.75;
-    margin-bottom: 1.8rem;
-    max-width: 440px;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+
+  /* Bloco de preço */
+  .modal-price-block {
+    display: flex;
+    align-items: baseline;
+    gap: .7rem;
+    margin-bottom: 2.4rem;
+    padding: 1.2rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
   .modal-price {
     font-family: "Bebas Neue", sans-serif;
-    font-size: 3.4rem;
+    font-size: 3rem;
     color: var(--accent);
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: baseline;
-    gap: .5rem;
+    line-height: 1;
   }
-  .modal-price-label {
-    font-size: 1rem;
+  .modal-price-installments {
+    font-size: .78rem;
     color: var(--muted);
-    font-family: "DM Sans", sans-serif;
-    font-weight: 400;
+    line-height: 1.4;
   }
+
+  /* Seleção de tamanho */
   .size-label {
-    font-size: .72rem;
+    font-size: .68rem;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: .15em;
+    letter-spacing: .18em;
     color: var(--muted);
-    margin-bottom: .8rem;
+    margin-bottom: .7rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
+  .size-label a {
+    font-size: .68rem;
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+    opacity: .7;
+  }
+  .size-label a:hover { opacity: 1; }
   .sizes {
     display: flex;
-    gap: .6rem;
+    gap: .5rem;
     margin-bottom: 2rem;
     flex-wrap: wrap;
   }
   .size-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
+    background: transparent;
+    border: 1.5px solid var(--border);
     color: var(--muted);
-    width: 52px;
-    height: 52px;
-    font-size: .85rem;
+    width: 50px;
+    height: 50px;
+    font-size: .78rem;
+    font-weight: 500;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all .2s;
+    transition: all .18s;
     font-family: "DM Sans", sans-serif;
-    border-radius: 4px;
+    border-radius: 6px;
+    letter-spacing: .06em;
   }
-  .size-btn:hover, .size-btn.selected {
+  .size-btn:hover {
+    border-color: var(--text);
+    color: var(--text);
+  }
+  .size-btn.selected {
     background: var(--accent);
     border-color: var(--accent);
     color: #000;
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(255,140,0,.35);
   }
+
+  /* Botão principal */
   .modal-add-btn {
     width: 100%;
     background: var(--accent);
     color: #000;
     border: none;
-    padding: 1.1rem;
+    padding: 1.05rem 1.5rem;
     font-family: "DM Sans", sans-serif;
-    font-weight: 600;
-    font-size: .95rem;
+    font-weight: 700;
+    font-size: .9rem;
     text-transform: uppercase;
-    letter-spacing: .14em;
+    letter-spacing: .16em;
     cursor: pointer;
-    transition: background .2s, transform .1s;
-    border-radius: 4px;
+    transition: background .2s, box-shadow .2s, transform .1s;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
   }
-  .modal-add-btn:hover { background: #ff9d2b; }
+  .modal-add-btn:hover {
+    background: #ff9d2b;
+    box-shadow: 0 8px 28px rgba(255,140,0,.38);
+  }
   .modal-add-btn:active { transform: scale(.985); }
 
-  /* Remove o botão X antigo — usamos o botão voltar na topbar */
+  /* Remove o botão X antigo */
   .modal-close { display: none; }
 
-  /* Zoom btn */
+  /* Zoom btn sobre a imagem */
   .modal-zoom-btn {
     position: absolute;
     bottom: 14px;
@@ -776,18 +882,20 @@
     .modal-img {
       position: static;
       height: auto;
-      min-height: 320px;
-      padding: 2rem 1.5rem 1.5rem;
+      min-height: 55vw;
+      max-height: 70vw;
+      padding: 2rem 1.5rem 1.2rem;
       border-right: none;
       border-bottom: 1px solid var(--border);
     }
-    .modal-photo { max-height: 50vw !important; }
+    .modal-photo { max-height: 55vw !important; }
     .modal-jersey { width: 160px; height: 185px; }
-    .modal-body { padding: 2rem 1.2rem 4rem; }
-    .modal-name { font-size: 2.2rem; }
-    .modal-price { font-size: 2.6rem; }
-    .modal-topbar { padding: .75rem 1.2rem; }
+    .modal-body { padding: 1.8rem 1.2rem 4rem; }
+    .modal-name { font-size: 2rem; }
+    .modal-price { font-size: 2.4rem; }
+    .modal-topbar { padding: 0 1rem; }
     .modal-back-btn span { display: none; }
+    .modal-price-block { margin-bottom: 1.6rem; }
   }
   @media (max-width: 480px) {
     .search-input { width: 80px; }
@@ -1689,13 +1797,15 @@
       <button class="modal-zoom-btn" onclick="event.stopPropagation();openZoom()" aria-label="Ampliar">🔍</button>
     </div>
     <div class="modal-body">
-      <div>
-        <div class="modal-club" id="modal-club"></div>
-        <div class="modal-name" id="modal-name"></div>
-        <div class="modal-rating-summary" id="modalRatingSummary"></div>
-      </div>
+      <div class="modal-club" id="modal-club"></div>
+      <div class="modal-name" id="modal-name"></div>
+      <div class="modal-rating-summary" id="modalRatingSummary"></div>
+      <div class="modal-divider"></div>
       <div class="modal-desc" id="modal-desc">Tecido premium leve e respirável, costuras reforçadas, escudo e detalhes em alta definição. Corte moderno e confortável.</div>
-      <div class="modal-price"><span id="modal-price"></span></div>
+      <div class="modal-price-block">
+        <div class="modal-price" id="modal-price"></div>
+        <div class="modal-price-installments">em até 3x sem juros</div>
+      </div>
       <div class="size-label">Escolha o tamanho</div>
       <div class="sizes" id="modal-sizes"></div>
 
