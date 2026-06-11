@@ -220,15 +220,13 @@
 
   /* Modal wishlist button */
   .modal-fav {
-    background: transparent; border: 1px solid var(--border);
-    color: var(--muted); width: 44px; height: 44px; border-radius: 50%;
-    font-size: 1.3rem; cursor: pointer; transition: all .2s; flex-shrink: 0;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); width: 38px; height: 38px; border-radius: 3px;
+    font-size: 1rem; cursor: pointer; transition: all .2s; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
   }
   .modal-fav:hover { border-color: var(--accent2); color: var(--accent2); }
   .modal-fav.faved { color: var(--accent2); border-color: var(--accent2); background: rgba(255,60,60,.08); }
-  .modal-fav.faved::after { content: '♥'; }
-  .modal-fav:not(.faved)::after { content: '♡'; }
   .badge-new { position:absolute;top:12px;left:12px;background:linear-gradient(135deg, #ffb347 0%, #ff8c00 50%, #d96d00 100%);color:#1a0a00;font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;padding:.25rem .65rem;font-weight:700;border:1px solid rgba(255,200,100,0.45);box-shadow:0 2px 10px rgba(255,140,0,0.35); }
   .badge-sale { position:absolute;top:12px;left:12px;background:var(--accent2);color:#fff;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;padding:.25rem .6rem;font-weight:500; }
   .card-info { padding: 1.2rem 1.4rem 1.4rem; }
@@ -294,26 +292,243 @@
   .checkout-btn { width:100%;background:var(--accent);color:#000;border:none;padding:1.1rem;font-family:"DM Sans",sans-serif;font-weight:500;font-size:.9rem;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;transition:background .2s; }
   .checkout-btn:hover { background:#ff9d2b; }
 
-  /* MODAL */
+  /* MODAL — agora página de produto em tela cheia */
   .overlay { position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px); }
   .overlay.visible { opacity:1;pointer-events:all; }
-  .modal { position:fixed;top:50%;left:50%;transform:translate(-50%,-60%) scale(.96);z-index:300;width:min(860px,95vw);background:var(--surface);border:1px solid var(--border);opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto; }
-  .modal.open { transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:all; }
-  .modal-inner { display:grid;grid-template-columns:1fr 1fr;min-height:400px; }
-  .modal-img { display:flex;align-items:center;justify-content:center;padding:3rem;background:var(--surface2); }
-  .modal-jersey { width:160px;height:185px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;box-shadow:0 24px 50px rgba(0,0,0,.6);animation:float 4s ease-in-out infinite; }
-  .modal-jersey-num { font-family:"Bebas Neue",sans-serif;font-size:5.5rem;color:rgba(255,255,255,.08);position:absolute;bottom:0;right:5px;line-height:1; }
-  .modal-body { padding:2.5rem; }
-  .modal-club { font-size:.72rem;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);margin-bottom:.4rem; }
-  .modal-name { font-family:"Bebas Neue",sans-serif;font-size:2.2rem;line-height:1;margin-bottom:.8rem; }
-  .modal-desc { font-size:.88rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem; }
-  .modal-price { font-family:"Bebas Neue",sans-serif;font-size:2.8rem;color:var(--accent);margin-bottom:1.5rem; }
-  .size-label { font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:.7rem; }
-  .sizes { display:flex;gap:.5rem;margin-bottom:1.8rem;flex-wrap:wrap; }
-  .size-btn { background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:44px;height:44px;font-size:.82rem;text-transform:uppercase;cursor:pointer;transition:all .2s;font-family:"DM Sans",sans-serif; }
-  .size-btn:hover, .size-btn.selected { background:var(--accent);border-color:var(--accent);color:#000; }
-  .modal-add-btn { width:100%;background:var(--accent);color:#000;border:none;padding:1rem;font-family:"DM Sans",sans-serif;font-weight:500;font-size:.9rem;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;transition:background .2s; }
-  .modal-add-btn:hover { background:#ff9d2b; }
+
+  /* Página de produto em tela cheia */
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: var(--bg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease, transform .35s cubic-bezier(.4,0,.2,1);
+    transform: translateY(30px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal.open {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  /* Barra de topo da página de produto */
+  .modal-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: .85rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .modal-back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: .45rem 1rem .45rem .7rem;
+    font-family: "DM Sans", sans-serif;
+    font-size: .82rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    transition: all .2s;
+    border-radius: 3px;
+    letter-spacing: .04em;
+  }
+  .modal-back-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .modal-back-btn svg { width: 14px; height: 14px; }
+  .modal-breadcrumb {
+    font-size: .78rem;
+    color: var(--muted);
+    letter-spacing: .06em;
+  }
+  .modal-breadcrumb span { color: var(--text); }
+
+  /* Layout principal: galeria esquerda + info direita */
+  .modal-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 57px);
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Coluna esquerda — galeria grande e sticky */
+  .modal-img {
+    position: sticky;
+    top: 57px;
+    height: calc(100vh - 57px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2.5rem;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    gap: 1.5rem;
+  }
+
+  /* Foto principal — muito maior agora */
+  .modal-photo {
+    max-width: 100% !important;
+    max-height: 68vh !important;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 32px 60px rgba(0,0,0,.55));
+    cursor: zoom-in;
+    transition: transform .3s ease;
+    border-radius: 4px;
+  }
+  .modal-photo:hover { transform: scale(1.02); }
+
+  .modal-jersey {
+    width: 220px;
+    height: 255px;
+    border-radius: 0 0 32px 32px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 32px 64px rgba(0,0,0,.6);
+    animation: float 4s ease-in-out infinite;
+  }
+  .modal-jersey-num {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 7rem;
+    color: rgba(255,255,255,.08);
+    position: absolute;
+    bottom: 0;
+    right: 8px;
+    line-height: 1;
+  }
+
+  /* Thumbnails — miniaturas das fotos extras */
+  .modal-thumbs {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .modal-thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: .6;
+    transition: all .2s;
+  }
+  .modal-thumb:hover, .modal-thumb.active { opacity: 1; border-color: var(--accent); }
+
+  /* Coluna direita — informações de compra com scroll */
+  .modal-body {
+    padding: 3.5rem 3rem 5rem;
+    overflow-y: auto;
+  }
+  .modal-club {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .22em;
+    color: var(--accent);
+    margin-bottom: .5rem;
+  }
+  .modal-name {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: .6rem;
+  }
+  .modal-desc {
+    font-size: .9rem;
+    color: var(--muted);
+    line-height: 1.75;
+    margin-bottom: 1.8rem;
+    max-width: 440px;
+  }
+  .modal-price {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 3.4rem;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+  }
+  .modal-price-label {
+    font-size: 1rem;
+    color: var(--muted);
+    font-family: "DM Sans", sans-serif;
+    font-weight: 400;
+  }
+  .size-label {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .15em;
+    color: var(--muted);
+    margin-bottom: .8rem;
+  }
+  .sizes {
+    display: flex;
+    gap: .6rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .size-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 52px;
+    height: 52px;
+    font-size: .85rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: "DM Sans", sans-serif;
+    border-radius: 4px;
+  }
+  .size-btn:hover, .size-btn.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+  .modal-add-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 1.1rem;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+    font-size: .95rem;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    border-radius: 4px;
+  }
+  .modal-add-btn:hover { background: #ff9d2b; }
+  .modal-add-btn:active { transform: scale(.985); }
+
+  /* Remove o botão X antigo — usamos o botão voltar na topbar */
+  .modal-close { display: none; }
+
+  /* Zoom btn */
+  .modal-zoom-btn {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    z-index: 5;
+  }
 
   /* PERSONALIZATION */
   .perso-box {
@@ -557,9 +772,22 @@
     .newsletter-form { flex-direction:column; }
     footer { flex-direction:column; gap:1.5rem; text-align:center; }
     .footer-links { flex-wrap: wrap; justify-content: center; gap: 1rem; }
-    .modal-inner { grid-template-columns:1fr; }
-    .modal-img { padding:1.5rem; }
-    .modal { width: 96vw; max-height: 90vh; }
+    .modal-inner { grid-template-columns: 1fr; min-height: auto; }
+    .modal-img {
+      position: static;
+      height: auto;
+      min-height: 320px;
+      padding: 2rem 1.5rem 1.5rem;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-photo { max-height: 50vw !important; }
+    .modal-jersey { width: 160px; height: 185px; }
+    .modal-body { padding: 2rem 1.2rem 4rem; }
+    .modal-name { font-size: 2.2rem; }
+    .modal-price { font-size: 2.6rem; }
+    .modal-topbar { padding: .75rem 1.2rem; }
+    .modal-back-btn span { display: none; }
   }
   @media (max-width: 480px) {
     .search-input { width: 80px; }
@@ -1431,13 +1659,27 @@
 
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
-<!-- MODAL -->
+<!-- MODAL — Página de produto em tela cheia -->
 <div class="modal" id="modal">
   <button class="modal-close" onclick="closeModal()">✕</button>
+
+  <!-- Barra de navegação superior -->
+  <div class="modal-topbar">
+    <button class="modal-back-btn" onclick="closeModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Voltar</span>
+    </button>
+    <div class="modal-breadcrumb">Loja <span id="modal-breadcrumb-name"></span></div>
+    <div style="margin-left:auto">
+      <button class="modal-fav" id="modalFav" onclick="toggleFavFromModal()" title="Favoritar" style="position:static;transform:none;border:1px solid var(--border);width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface2);color:var(--muted);font-size:1rem;transition:all .2s;border-radius:3px;"></button>
+    </div>
+  </div>
+
   <div class="modal-inner">
+    <!-- Coluna esquerda: galeria grande e sticky -->
     <div class="modal-img" id="modal-img-container">
       <button class="modal-arrow left" onclick="event.stopPropagation();prevImage()" aria-label="Anterior">‹</button>
-      <img class="modal-photo" id="modal-photo" alt="" style="display:none;max-width:90%;max-height:340px;object-fit:contain;filter:drop-shadow(0 24px 40px rgba(0,0,0,.6));cursor:zoom-in;" onclick="openZoom()">
+      <img class="modal-photo" id="modal-photo" alt="" style="display:none;" onclick="openZoom()">
       <div class="modal-jersey" id="modal-jersey">
         <div class="jersey-mini-stripes"></div>
         <div class="modal-jersey-num" id="modal-num">10</div>
@@ -1447,16 +1689,13 @@
       <button class="modal-zoom-btn" onclick="event.stopPropagation();openZoom()" aria-label="Ampliar">🔍</button>
     </div>
     <div class="modal-body">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
-        <div style="flex:1">
-          <div class="modal-club" id="modal-club"></div>
-          <div class="modal-name" id="modal-name"></div>
-          <div class="modal-rating-summary" id="modalRatingSummary"></div>
-        </div>
-        <button class="modal-fav" id="modalFav" onclick="toggleFavFromModal()" title="Favoritar"></button>
+      <div>
+        <div class="modal-club" id="modal-club"></div>
+        <div class="modal-name" id="modal-name"></div>
+        <div class="modal-rating-summary" id="modalRatingSummary"></div>
       </div>
       <div class="modal-desc" id="modal-desc">Tecido premium leve e respirável, costuras reforçadas, escudo e detalhes em alta definição. Corte moderno e confortável.</div>
-      <div class="modal-price" id="modal-price"></div>
+      <div class="modal-price"><span id="modal-price"></span></div>
       <div class="size-label">Escolha o tamanho</div>
       <div class="sizes" id="modal-sizes"></div>
 
@@ -2218,7 +2457,11 @@ function toggleFavFromModal() {
   if (!currentModalProduct) return;
   toggleFav(currentModalProduct.id, currentModalProduct._source, null);
   const faved = isFaved(currentModalProduct.id, currentModalProduct._source);
-  document.getElementById('modalFav').classList.toggle('faved', faved);
+  const btn = document.getElementById('modalFav');
+  btn.classList.toggle('faved', faved);
+  btn.textContent = faved ? '♥' : '♡';
+  if (faved) { btn.style.color = 'var(--accent2)'; btn.style.borderColor = 'var(--accent2)'; }
+  else { btn.style.color = 'var(--muted)'; btn.style.borderColor = 'var(--border)'; }
   // Update card heart too
   renderProducts();
 }
@@ -2276,6 +2519,9 @@ function openModal(id, source) {
   document.getElementById('modal-name').textContent = p.name;
   document.getElementById('modal-price').textContent = `R$ ${p.price}`;
   document.getElementById('modal-num').textContent = p.num;
+  // Breadcrumb
+  const bc = document.getElementById('modal-breadcrumb-name');
+  if (bc) bc.textContent = '/ ' + p.name;
   const desc = source === 'retro'
     ? 'Modelo clássico com acabamento vintage. Tecido leve, costuras reforçadas e escudo bordado, fiel ao uniforme original da época.'
     : 'Tecido premium leve e respirável, costuras reforçadas, escudo e detalhes em alta definição. Corte moderno e confortável.';
@@ -2291,13 +2537,18 @@ function openModal(id, source) {
   document.getElementById('persoName').value = '';
   document.getElementById('persoNum').value = '';
   // Sync favorite heart
-  document.getElementById('modalFav').classList.toggle('faved', isFaved(p.id, p._source));
+  const favBtn = document.getElementById('modalFav');
+  favBtn.classList.toggle('faved', isFaved(p.id, p._source));
+  favBtn.textContent = isFaved(p.id, p._source) ? '♥' : '♡';
   // Render reviews
   renderModalReviews(p);
   // Registrar em "visto recentemente"
   addToRecent(p.id, p._source);
+  // Scroll to top before opening
+  document.getElementById('modal').scrollTop = 0;
   document.getElementById('modal').classList.add('open');
-  document.getElementById('overlay').classList.add('visible');
+  document.getElementById('overlay').style.display = 'none'; // Hide overlay — page is full screen
+  document.body.style.overflow = 'hidden';
 }
 
 function togglePerso() {
@@ -2314,6 +2565,7 @@ function selectSize(btn, size) {
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
   document.getElementById('overlay').classList.remove('visible');
+  document.body.style.overflow = '';
 }
 
 function addFromModal() {
