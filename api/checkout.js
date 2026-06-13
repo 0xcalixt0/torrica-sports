@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Apenas POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -8,66 +7,52 @@ export default async function handler(req, res) {
   const EMAIL = process.env.PAGSEGURO_EMAIL;
 
   if (!TOKEN || !EMAIL) {
-    return res.status(500).json({ error: 'Credenciais não configuradas' });
+    return res.status(500).json({ error: 'Credenciais nao configuradas' });
   }
 
-  const { items, shipping, total, customer } = req.body;
+  const { items, shipping, total } = req.body;
 
   if (!items || !items.length || !total) {
-    return res.status(400).json({ error: 'Dados do pedido inválidos' });
+    return res.status(400).json({ error: 'Dados do pedido invalidos' });
   }
 
   try {
-    // Monta os itens no formato do PagSeguro
-    const itemsXml = items.map((item, i) => `
-      <item>
-        <id>${i + 1}</id>
-        <description>${item.club} — ${item.name} (Tam ${item.size})${item.perso ? ' [Personalizado]' : ''}</description>
-        <amount>${parseFloat(item.price).toFixed(2)}</amount>
-        <quantity>${item.qty}</quantity>
-      </item>`).join('');
+    const itemsXml = items.map((item, i) => {
+      const desc = `${item.club} ${item.name} Tam ${item.size}${item.perso ? ' Personalizado' : ''}`;
+      const cleanDesc = desc.replace(/[^a-zA-Z0-9 \-\.]/g, ' ').substring(0, 100);
+      const price = Math.max(0.01, parseFloat(item.price)).toFixed(2);
+      const qty = parseInt(item.qty) || 1;
+      return `<item><id>${i + 1}</id><description>${cleanDesc}</description><amount>${price}</amount><quantity>${qty}</quantity></item>`;
+    }).join('');
 
-    const shippingCost = shipping?.value > 0
-      ? `<cost>${parseFloat(shipping.value).toFixed(2)}</cost>`
-      : '';
+    const shippingXml = shipping && shipping.value > 0
+      ? `<shipping><type>3</type><cost>${parseFloat(shipping.value).toFixed(2)}</cost></shipping>`
+      : `<shipping><type>3</type><cost>0.00</cost></shipping>`;
 
-    const shippingType = shipping?.method === 'sedex' ? 1 : 3; // 1=PAC, 3=Sedex na API, mas vamos usar tipo 3 (outro)
+    const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><checkout><currency>BRL</currency><items>${itemsXml}</items>${shippingXml}<redirectURL>https://www.torricasports.shop</redirectURL><maxUses>1</maxUses><maxAge>3600</maxAge></checkout>`;
 
-    const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<checkout>
-  <currency>BRL</currency>
-  <items>${itemsXml}
-  </items>
-  <shipping>
-    <type>3</type>
-    ${shippingCost}
-  </shipping>
-  <redirectURL>https://www.torricasports.shop</redirectURL>
-  <notificationURL>https://www.torricasports.shop/api/notify</notificationURL>
-  <maxUses>1</maxUses>
-  <maxAge>3600</maxAge>
-</checkout>`;
+    const url = `https://ws.pagseguro.uol.com.br/v2/checkout?email=${encodeURIComponent(EMAIL)}&token=${encodeURIComponent(TOKEN)}`;
 
-    const response = await fetch(
-      `https://ws.pagseguro.uol.com.br/v2/checkout?email=${encodeURIComponent(EMAIL)}&token=${TOKEN}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/xml; charset=UTF-8' },
-        body: xml
-      }
-    );
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/xml; charset=UTF-8',
+        'Accept': 'application/xml'
+      },
+      body: xml
+    });
 
     const text = await response.text();
 
     if (!response.ok) {
-      console.error('PagSeguro error:', text);
-      return res.status(502).json({ error: 'Erro ao criar sessão no PagSeguro', detail: text });
+      console.error('PagSeguro HTTP', response.status, text);
+      return res.status(502).json({ error: 'Erro PagSeguro', detail: text, status: response.status });
     }
 
-    // Extrai o code da resposta XML
     const codeMatch = text.match(/<code>([^<]+)<\/code>/);
     if (!codeMatch) {
-      return res.status(502).json({ error: 'Código de sessão não encontrado', detail: text });
+      console.error('Sem code na resposta:', text);
+      return res.status(502).json({ error: 'Code nao encontrado', detail: text });
     }
 
     const code = codeMatch[1];
