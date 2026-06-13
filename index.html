@@ -2931,9 +2931,7 @@ function renderHeroJerseys() {
     </div>`).join('');
 }
 
-renderProducts();
 renderHeroJerseys();
-
 
 // ========== USER ACCOUNT SYSTEM ==========
 
@@ -2957,6 +2955,21 @@ window._onFbAuthChange = async (user) => {
   updateUserUI();
   updateCartLoginState();
   renderProducts();
+
+  // Trata retorno do Stripe após pagamento
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('pagamento') === 'sucesso') {
+    history.replaceState({}, '', '/');
+    cart = [];
+    renderCart();
+    saveCartSnapshot();
+    setTimeout(() => {
+      showToast({ name: 'Pedido confirmado!', color1: '#10b981', color2: '#065f46' }, '✅');
+    }, 500);
+    if (currentUser) {
+      setTimeout(() => openAccount('orders'), 1000);
+    }
+  }
 };
 
 function formatCpf(input) {
@@ -3574,6 +3587,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 renderPromos();
+renderProducts();
 checkAbandonedCart();
 
 </script>
