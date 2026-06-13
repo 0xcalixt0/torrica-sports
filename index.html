@@ -2687,7 +2687,7 @@ function updateSummary() {
   document.getElementById('sumTotal').textContent = 'R$ ' + total;
 }
 
-function finalizeOrder() {
+async function finalizeOrder() {
   if (!currentCepData) { alert('⚠️ Calcule o frete primeiro.'); return; }
   if (!selectedPayment) { alert('⚠️ Escolha uma forma de pagamento.'); return; }
   if (!cart.length) return;
