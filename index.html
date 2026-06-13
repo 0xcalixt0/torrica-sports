@@ -1826,7 +1826,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAg1HVZHpqYyehi9pLBplA42EBcinku9-M",
@@ -1841,7 +1841,7 @@ const app = initializeApp(firebaseConfig);
 window.fbAuth = getAuth(app);
 window.fbDb = getFirestore(app);
 window.fbAuthFns = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut };
-window.fbFirestore = { doc, setDoc, getDoc, updateDoc };
+window.fbFirestore = { doc, setDoc, getDoc, updateDoc, collection, getDocs, query, orderBy };
 
 onAuthStateChanged(window.fbAuth, (user) => {
   if (window._onFbAuthChange) window._onFbAuthChange(user);
@@ -2714,6 +2714,27 @@ function finalizeOrder() {
   const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n${clienteTxt}*Itens:*\n${itens}\n\n${addrTxt}\n*Frete:* ${freteLabel}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n*Total: R$ ${total}*`;
   const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
+  // Salva pedido no Firestore
+  if (currentUser && window.fbDb) {
+    const orderId = 'TS' + Date.now().toString().slice(-8);
+    const orderData = {
+      id: orderId,
+      date: new Date().toISOString(),
+      items: cart.map(p => ({ club: p.club, name: p.name, size: p.size, qty: p.qty, price: p.unitPrice || p.price })),
+      frete,
+      freteLabel,
+      payment: selectedPayment,
+      total,
+      status: 'pending',
+      statusLabel: 'Aguardando Pagamento',
+      address: currentUser.address || { localidade: currentCepData.localidade, uf: currentCepData.uf, cep: currentCepData.cep }
+    };
+    try {
+      const { doc, setDoc } = window.fbFirestore;
+      await setDoc(doc(window.fbDb, 'users', currentUser.uid, 'orders', orderId), orderData);
+    } catch(e) { console.error('Erro ao salvar pedido:', e); }
+  }
+
   if (selectedPayment === 'pix') {
     openPix(total, waUrl);
   } else if (selectedPayment === 'cartao') {
@@ -3148,7 +3169,49 @@ function renderAccount() {
   `;
 
   const ordersBox = document.getElementById('accountOrders');
-  if (ordersBox) ordersBox.innerHTML = '<div class="no-orders">Acompanhe seus pedidos pelo e-mail de confirmação do Stripe ou WhatsApp. 👕</div>';
+  if (!ordersBox) return;
+  ordersBox.innerHTML = '<div class="no-orders" style="color:var(--muted);font-size:.85rem;text-align:center;padding:2rem">Carregando pedidos...</div>';
+
+  if (!currentUser?.uid || !window.fbDb) {
+    ordersBox.innerHTML = '<div class="no-orders">Faça login para ver seus pedidos.</div>';
+    return;
+  }
+
+  try {
+    const { collection, getDocs, query, orderBy } = window.fbFirestore;
+    const q = query(collection(window.fbDb, 'users', currentUser.uid, 'orders'), orderBy('date', 'desc'));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      ordersBox.innerHTML = '<div class="no-orders">Você ainda não fez nenhum pedido.<br><br>Que tal começar agora? 👕</div>';
+      return;
+    }
+
+    const statusColors = { pending: '#f59e0b', paid: '#10b981', sent: '#3b82f6', delivered: '#6b7280', cancelled: '#ef4444' };
+    ordersBox.innerHTML = snap.docs.map(d => {
+      const o = d.data();
+      const color = statusColors[o.status] || '#f59e0b';
+      const itemsTxt = o.items.map(i => `• ${i.club} ${i.name} (${i.size}) x${i.qty}`).join('<br>');
+      const dateStr = new Date(o.date).toLocaleDateString('pt-BR');
+      return `
+        <div class="order-item">
+          <div class="order-header">
+            <span class="order-id">#${o.id}</span>
+            <span class="order-date">${dateStr}</span>
+          </div>
+          <span class="order-status" style="background:${color}22;color:${color};padding:.2rem .7rem;border-radius:99px;font-size:.72rem;font-weight:600;">${o.statusLabel}</span>
+          <div style="font-size:.8rem;color:var(--muted);line-height:1.6;margin:.6rem 0">${itemsTxt}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">${o.freteLabel || 'Frete: —'}</div>
+          <div class="order-total">
+            <span>Total</span>
+            <span class="order-total-val">R$ ${o.total}</span>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error(e);
+    ordersBox.innerHTML = '<div class="no-orders">Erro ao carregar pedidos. Tente novamente.</div>';
+  }
 }
 
 function editAccount() {
