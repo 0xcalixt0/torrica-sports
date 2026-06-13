@@ -3,10 +3,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const TOKEN = process.env.PAGSEGURO_TOKEN;
+  const SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
-  if (!TOKEN) {
-    return res.status(500).json({ error: 'Token nao configurado' });
+  if (!SECRET_KEY) {
+    return res.status(500).json({ error: 'Stripe key nao configurada' });
   }
 
   const { items, shipping, total } = req.body;
@@ -16,62 +16,60 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Monta itens para API v4
-    const psItems = items.map((item, i) => ({
-      reference_id: `item-${i + 1}`,
-      name: `${item.club} ${item.name} Tam ${item.size}`.replace(/[^a-zA-Z0-9 \-]/g, ' ').substring(0, 64).trim(),
+    const lineItems = items.map(item => ({
+      price_data: {
+        currency: 'brl',
+        product_data: {
+          name: `${item.club} ${item.name} - Tam ${item.size}${item.perso ? ' (Personalizado)' : ''}`.substring(0, 100),
+        },
+        unit_amount: Math.round(Math.max(0.01, parseFloat(item.price)) * 100),
+      },
       quantity: parseInt(item.qty) || 1,
-      unit_amount: Math.round(Math.max(0.01, parseFloat(item.price)) * 100) // centavos
     }));
 
-    const shippingAmount = shipping && shipping.value > 0
-      ? Math.round(parseFloat(shipping.value) * 100)
-      : 0;
+    // Adiciona frete como item separado se houver
+    if (shipping && shipping.value > 0) {
+      lineItems.push({
+        price_data: {
+          currency: 'brl',
+          product_data: { name: `Frete - ${shipping.method?.toUpperCase() || 'Entrega'}` },
+          unit_amount: Math.round(parseFloat(shipping.value) * 100),
+        },
+        quantity: 1,
+      });
+    }
 
-    const body = {
-      reference_id: `pedido-${Date.now()}`,
-      customer_modifiable: true,
-      items: psItems,
-      shipping: {
-        type: 'FIXED',
-        amount: shippingAmount
-      },
-      redirect_url: 'https://www.torricasports.shop',
-      return_url: 'https://www.torricasports.shop',
-      payment_methods: [
-        { type: 'CREDIT_CARD' },
-        { type: 'DEBIT_CARD' },
-        { type: 'PIX' },
-        { type: 'BOLETO' }
-      ]
-    };
+    const body = new URLSearchParams();
+    body.append('mode', 'payment');
+    body.append('success_url', 'https://www.torricasports.shop?pagamento=sucesso');
+    body.append('cancel_url', 'https://www.torricasports.shop?pagamento=cancelado');
+    body.append('locale', 'pt-BR');
+    body.append('payment_method_types[]', 'card');
 
-    const response = await fetch('https://api.pagseguro.com/checkouts', {
+    lineItems.forEach((item, i) => {
+      body.append(`line_items[${i}][price_data][currency]`, item.price_data.currency);
+      body.append(`line_items[${i}][price_data][product_data][name]`, item.price_data.product_data.name);
+      body.append(`line_items[${i}][price_data][unit_amount]`, item.price_data.unit_amount);
+      body.append(`line_items[${i}][quantity]`, item.quantity);
+    });
+
+    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${TOKEN}`
+        'Authorization': `Bearer ${SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify(body)
+      body: body.toString(),
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error('PagSeguro v4 error:', JSON.stringify(data));
-      return res.status(502).json({ error: 'Erro PagSeguro', detail: data });
+    if (!response.ok || data.error) {
+      console.error('Stripe error:', JSON.stringify(data));
+      return res.status(502).json({ error: 'Erro Stripe', detail: data.error?.message });
     }
 
-    // Pega o link de pagamento
-    const paymentLink = data.links?.find(l => l.rel === 'PAY')?.href
-      || data.links?.[0]?.href;
-
-    if (!paymentLink) {
-      console.error('Sem link de pagamento:', JSON.stringify(data));
-      return res.status(502).json({ error: 'Link nao encontrado', detail: data });
-    }
-
-    return res.status(200).json({ redirectUrl: paymentLink });
+    return res.status(200).json({ redirectUrl: data.url });
 
   } catch (err) {
     console.error('Checkout error:', err);
