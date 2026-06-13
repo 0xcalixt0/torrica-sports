@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   try {
     const itemsXml = items.map((item, i) => {
       const desc = `${item.club} ${item.name} Tam ${item.size}${item.perso ? ' Personalizado' : ''}`;
-      const cleanDesc = desc.replace(/[^a-zA-Z0-9 \-\.]/g, ' ').substring(0, 100);
+      const cleanDesc = desc.replace(/[^a-zA-Z0-9 \-\.]/g, ' ').substring(0, 100).trim();
       const price = Math.max(0.01, parseFloat(item.price)).toFixed(2);
       const qty = parseInt(item.qty) || 1;
       return `<item><id>${i + 1}</id><description>${cleanDesc}</description><amount>${price}</amount><quantity>${qty}</quantity></item>`;
@@ -36,8 +36,7 @@ export default async function handler(req, res) {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/xml; charset=UTF-8',
-        'Accept': 'application/xml'
+        'Content-Type': 'application/xml; charset=UTF-8'
       },
       body: xml
     });
