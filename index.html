@@ -1788,8 +1788,19 @@
   <div class="cart-items" id="cart-items"><div class="cart-empty">Seu carrinho está vazio.<br>Adicione suas camisas favoritas!</div></div>
   <div class="cart-footer" id="cart-footer" style="display:none">
 
-    <!-- STEP: CEP / Frete -->
-    <div class="checkout-step">
+    <!-- LOGIN REQUIRED NOTICE (shown when not logged in) -->
+    <div class="checkout-step" id="loginRequiredStep">
+      <div style="text-align:center;padding:.5rem 0">
+        <div style="font-size:1.5rem;margin-bottom:.5rem">🔒</div>
+        <div style="font-size:.9rem;font-weight:600;margin-bottom:.4rem">Entre para finalizar seu pedido</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:1rem;line-height:1.5">Precisamos dos seus dados para entregar sua camisa no endereço certo.</div>
+        <button class="checkout-btn" onclick="closeCart();openAuth('login')" style="margin-bottom:.5rem">Entrar na conta</button>
+        <button class="checkout-btn" onclick="closeCart();openAuth('signup')" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);margin-top:.4rem">Criar conta grátis</button>
+      </div>
+    </div>
+
+    <!-- STEP: CEP / Frete (shown when logged in) -->
+    <div class="checkout-step" id="cepStep" style="display:none">
       <h4>📍 Calcular Frete</h4>
       <div class="cep-input-row">
         <input type="text" class="cep-input" id="cepInput" placeholder="00000-000" maxlength="9" oninput="formatCep(this)">
@@ -2475,6 +2486,22 @@ function openCart() {
   document.getElementById('overlay').classList.add('visible');
   document.getElementById('modal').classList.remove('open');
   document.body.classList.add('cart-open');
+  updateCartLoginState();
+}
+
+function updateCartLoginState() {
+  const loginStep = document.getElementById('loginRequiredStep');
+  const cepStep = document.getElementById('cepStep');
+  if (!loginStep || !cepStep) return;
+  if (currentUser) {
+    loginStep.style.display = 'none';
+    cepStep.style.display = 'block';
+  } else {
+    loginStep.style.display = 'block';
+    cepStep.style.display = 'none';
+    document.getElementById('paymentStep').style.display = 'none';
+    document.getElementById('summaryStep').style.display = 'none';
+  }
 }
 
 function closeCart() {
@@ -2700,7 +2727,8 @@ function finalizeOrder() {
     const persoTxt = p.perso ? ` [Personalizado: ${p.perso.name || ''} ${p.perso.num ? '#'+p.perso.num : ''}]` : '';
     return `• ${p.club} — ${p.name} (Tam ${p.size})${persoTxt} x${p.qty} — R$ ${unit * p.qty}`;
   }).join('\n');
-  const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n*Itens:*\n${itens}\n\n*Endereço:*\n${currentCepData.logradouro || ''}, ${currentCepData.bairro || ''}\n${currentCepData.localidade} — ${currentCepData.uf}\nCEP: ${currentCepData.cep}\n\n*Frete:* ${selectedShipping.toUpperCase()} — ${frete === 0 ? 'GRÁTIS' : 'R$ ' + frete}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n*Total: R$ ${total}*`;
+  const clienteTxt = currentUser ? `*Cliente:* ${currentUser.name}\n*E-mail:* ${currentUser.email}\n*Telefone:* ${currentUser.phone || '—'}\n\n` : '';
+  const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n${clienteTxt}*Itens:*\n${itens}\n\n*Endereço:*\n${currentCepData.logradouro || ''}, ${currentCepData.bairro || ''}\n${currentCepData.localidade} — ${currentCepData.uf}\nCEP: ${currentCepData.cep}\n\n*Frete:* ${selectedShipping.toUpperCase()} — ${frete === 0 ? 'GRÁTIS' : 'R$ ' + frete}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n*Total: R$ ${total}*`;
   const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
   if (selectedPayment === 'pix') {
@@ -3047,6 +3075,7 @@ function loginAs(user) {
   localStorage.setItem(SESSION_KEY, user.email);
   closeAuth();
   updateUserUI();
+  updateCartLoginState();
   renderProducts();
 }
 
@@ -3055,6 +3084,7 @@ function logout() {
   localStorage.removeItem(SESSION_KEY);
   document.getElementById('userMenu').classList.remove('open');
   updateUserUI();
+  updateCartLoginState();
   closeAccount();
   renderProducts();
 }
