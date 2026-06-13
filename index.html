@@ -3146,7 +3146,7 @@ function closeAccount() {
   document.getElementById('accountPage').classList.remove('open');
 }
 
-function renderAccount() {
+async function renderAccount() {
   if (!currentUser) return;
   const u = currentUser;
   const initials = (u.name.split(' ')[0][0] + (u.name.split(' ')[1]?.[0] || '')).toUpperCase();
