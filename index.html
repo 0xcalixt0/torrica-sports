@@ -1593,7 +1593,6 @@
   </div>
   <div>
     <button onclick="openAdminOrders()">📦 Pedidos</button>
-    <button onclick="openCouponManager()">🎟️ Cupons</button>
     <button onclick="toggleAdmin()">✕ Sair</button>
   </div>
 </div>
@@ -1620,42 +1619,6 @@
 </div>
 
 <!-- COUPON MANAGER MODAL -->
-<div class="auth-modal" id="couponManager">
-  <div class="auth-content" style="max-width:520px">
-    <button class="auth-close" onclick="closeCouponManager()">✕</button>
-    <h3 class="auth-title">🎟️ Gerenciar Cupons</h3>
-    <p class="auth-subtitle">Crie e gerencie os cupons de desconto da loja</p>
-
-    <div id="couponList" style="margin-bottom:1.5rem"></div>
-
-    <div style="border-top:1px solid var(--border);padding-top:1.2rem">
-      <h4 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--accent);margin-bottom:.8rem;letter-spacing:.05em;">Novo Cupom</h4>
-      <div class="auth-field">
-        <label class="auth-label">Código (sem espaços)</label>
-        <input type="text" class="auth-input" id="newCouponCode" placeholder="EX: NATAL20" oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')">
-      </div>
-      <div style="display:flex;gap:.6rem">
-        <div class="auth-field" style="flex:1">
-          <label class="auth-label">Tipo</label>
-          <select class="auth-input" id="newCouponType">
-            <option value="percent">% de desconto</option>
-            <option value="fixed">R$ de desconto</option>
-            <option value="freeship">Frete grátis</option>
-          </select>
-        </div>
-        <div class="auth-field" style="flex:1">
-          <label class="auth-label">Valor</label>
-          <input type="number" class="auth-input" id="newCouponValue" placeholder="10">
-        </div>
-      </div>
-      <div class="auth-field">
-        <label class="auth-label">Compra mínima (R$, opcional)</label>
-        <input type="number" class="auth-input" id="newCouponMin" placeholder="0">
-      </div>
-      <button class="auth-submit" onclick="createCoupon()">Criar Cupom</button>
-    </div>
-  </div>
-</div>
 
 
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
@@ -1944,7 +1907,6 @@
         <div class="pay-method" onclick="selectPayment('pix',this)">
           <div class="pay-icon">⚡</div>
           <div class="pay-name">Pix</div>
-          <div class="pay-desc">5% off</div>
         </div>
         <div class="pay-method" onclick="selectPayment('cartao',this)">
           <div class="pay-icon">💳</div>
@@ -1954,22 +1916,10 @@
       </div>
     </div>
 
-    <!-- STEP: Coupon -->
-    <div class="checkout-step" id="couponStep" style="display:none">
-      <h4>🎟️ Cupom de Desconto</h4>
-      <div class="cep-input-row">
-        <input type="text" class="cep-input" id="couponInput" placeholder="DIGITE O CUPOM" oninput="this.value=this.value.toUpperCase().replace(/\\s/g,'')">
-        <button class="cep-btn" id="couponBtn" onclick="applyCoupon()">Aplicar</button>
-      </div>
-      <div class="cep-result" id="couponResult"></div>
-    </div>
-
     <!-- STEP: Summary -->
     <div class="checkout-step" id="summaryStep" style="display:none">
       <div class="summary-row"><span>Subtotal</span><span class="summary-val" id="sumSubtotal">R$ 0</span></div>
       <div class="summary-row"><span>Frete</span><span class="summary-val" id="sumFrete">—</span></div>
-      <div class="summary-row" id="sumDiscountRow" style="display:none"><span id="sumDiscountLabel">Desconto</span><span class="summary-val" id="sumDiscount" style="color:#00d97e">—</span></div>
-      <div class="summary-row" id="sumCouponRow" style="display:none"><span id="sumCouponLabel">Cupom</span><span class="summary-val" id="sumCoupon" style="color:#00d97e">—</span></div>
       <div class="summary-row total"><span>Total</span><span class="summary-val" id="sumTotal">R$ 0</span></div>
       <button class="checkout-btn" id="finalCheckoutBtn" onclick="finalizeOrder()" style="margin-top:1rem">Finalizar Compra</button>
     </div>
@@ -2694,138 +2644,6 @@ function pixPayload(key, name, city, amount) {
 let selectedShipping = null;
 let selectedPayment = null;
 let currentCepData = null;
-let appliedCoupon = null;
-
-// ========== CUPONS DE DESCONTO ==========
-// type: 'percent' (% off), 'fixed' (R$ off), 'freeship' (frete grátis)
-const DEFAULT_COUPONS = {
-  'PRIMEIRA10':  { type: 'percent',  value: 10, desc: '10% de desconto', minValue: 0, active: true },
-  'TORRICA15':   { type: 'percent',  value: 15, desc: '15% de desconto', minValue: 200, active: true },
-  'FRETEGRATIS': { type: 'freeship', value: 0,  desc: 'Frete grátis',     minValue: 0, active: true },
-  'BEMVINDO20':  { type: 'fixed',    value: 20, desc: 'R$ 20 de desconto', minValue: 100, active: true },
-};
-const COUPONS_KEY = 'torrica_coupons';
-
-function getCoupons() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(COUPONS_KEY) || 'null');
-    return stored || DEFAULT_COUPONS;
-  } catch(e) { return DEFAULT_COUPONS; }
-}
-function saveCoupons(coupons) {
-  localStorage.setItem(COUPONS_KEY, JSON.stringify(coupons));
-}
-
-function applyCoupon() {
-  const input = document.getElementById('couponInput');
-  const result = document.getElementById('couponResult');
-  const code = input.value.trim().toUpperCase();
-
-  if (!code) {
-    result.className = 'cep-result visible error';
-    result.innerHTML = '❌ Digite um cupom.';
-    return;
-  }
-  const coupons = getCoupons();
-  const coupon = coupons[code];
-
-  if (!coupon || !coupon.active) {
-    result.className = 'cep-result visible error';
-    result.innerHTML = '❌ Cupom inválido ou expirado.';
-    appliedCoupon = null;
-    updateSummary();
-    return;
-  }
-  const subtotal = cart.reduce((a,b) => a + (b.unitPrice || b.price) * b.qty, 0);
-  if (subtotal < (coupon.minValue || 0)) {
-    result.className = 'cep-result visible error';
-    result.innerHTML = `❌ Este cupom exige compra mínima de R$ ${coupon.minValue}.`;
-    appliedCoupon = null;
-    updateSummary();
-    return;
-  }
-
-  appliedCoupon = { code, ...coupon };
-  result.className = 'cep-result visible';
-  result.innerHTML = `✅ Cupom <strong>${code}</strong> aplicado — ${coupon.desc}! <a onclick="removeCoupon()" style="color:var(--accent2);cursor:pointer;text-decoration:underline;margin-left:.4rem;">remover</a>`;
-  updateSummary();
-}
-
-function removeCoupon() {
-  appliedCoupon = null;
-  document.getElementById('couponInput').value = '';
-  document.getElementById('couponResult').className = 'cep-result';
-  document.getElementById('couponResult').innerHTML = '';
-  updateSummary();
-}
-
-// ===== Coupon Manager (admin) =====
-function openCouponManager() {
-  document.getElementById('couponManager').classList.add('open');
-  renderCouponList();
-}
-function closeCouponManager() {
-  document.getElementById('couponManager').classList.remove('open');
-}
-function renderCouponList() {
-  const coupons = getCoupons();
-  const box = document.getElementById('couponList');
-  const entries = Object.entries(coupons);
-  if (!entries.length) {
-    box.innerHTML = '<p style="color:var(--muted);font-size:.85rem;text-align:center;padding:1rem;">Nenhum cupom criado.</p>';
-    return;
-  }
-  const typeLabel = (c) => {
-    if (c.type === 'percent') return c.value + '% off';
-    if (c.type === 'fixed') return 'R$ ' + c.value + ' off';
-    return 'Frete grátis';
-  };
-  box.innerHTML = entries.map(([code, c]) => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--border);border-radius:4px;margin-bottom:.5rem;">
-      <div>
-        <div style="font-weight:600;font-size:.9rem;color:${c.active?'var(--accent)':'var(--muted)'};">${code} ${c.active?'':'(inativo)'}</div>
-        <div style="font-size:.72rem;color:var(--muted);">${typeLabel(c)}${c.minValue?' · mín R$ '+c.minValue:''}</div>
-      </div>
-      <div style="display:flex;gap:.4rem;">
-        <button class="edit-btn" onclick="toggleCouponActive('${code}')">${c.active?'⏸ Pausar':'▶ Ativar'}</button>
-        <button class="edit-btn" style="border-color:rgba(255,60,60,.4);color:#ff8a8a;" onclick="deleteCoupon('${code}')">🗑</button>
-      </div>
-    </div>
-  `).join('');
-}
-function createCoupon() {
-  const code = document.getElementById('newCouponCode').value.trim().toUpperCase();
-  const type = document.getElementById('newCouponType').value;
-  const value = parseInt(document.getElementById('newCouponValue').value) || 0;
-  const minValue = parseInt(document.getElementById('newCouponMin').value) || 0;
-
-  if (!code) { alert('Digite o código do cupom.'); return; }
-  if (type !== 'freeship' && value <= 0) { alert('Digite um valor válido.'); return; }
-
-  const coupons = getCoupons();
-  const descMap = {
-    percent: value + '% de desconto',
-    fixed: 'R$ ' + value + ' de desconto',
-    freeship: 'Frete grátis'
-  };
-  coupons[code] = { type, value, desc: descMap[type], minValue, active: true };
-  saveCoupons(coupons);
-  document.getElementById('newCouponCode').value = '';
-  document.getElementById('newCouponValue').value = '';
-  document.getElementById('newCouponMin').value = '';
-  renderCouponList();
-}
-function toggleCouponActive(code) {
-  const coupons = getCoupons();
-  if (coupons[code]) { coupons[code].active = !coupons[code].active; saveCoupons(coupons); renderCouponList(); }
-}
-function deleteCoupon(code) {
-  if (!confirm(`Excluir o cupom ${code}?`)) return;
-  const coupons = getCoupons();
-  delete coupons[code];
-  saveCoupons(coupons);
-  renderCouponList();
-}
 
 // Tabela de frete por região (UF → {nome, valor PAC, valor SEDEX, prazo})
 const FRETE_TABLE = {
@@ -2917,7 +2735,6 @@ async function lookupCep() {
     `;
     selectShipping(fretGratis ? 'pac' : 'pac', null, true);
     document.getElementById('paymentStep').style.display = 'block';
-    document.getElementById('couponStep').style.display = 'block';
     document.getElementById('summaryStep').style.display = 'block';
     updateSummary();
   } catch(err) {
@@ -2959,49 +2776,11 @@ function updateSummary() {
       if (selectedShipping === 'pac' && subtotal >= FRETE_GRATIS_MIN) frete = 0;
     }
   }
-  let discount = 0;
-  let discountLabel = '';
-  if (selectedPayment === 'pix') {
-    discount = Math.round(subtotal * 0.05);
-    discountLabel = 'Desconto Pix (5%)';
-  }
 
-  // Cupom de desconto
-  let couponDiscount = 0;
-  let couponLabel = '';
-  if (appliedCoupon) {
-    if (appliedCoupon.type === 'percent') {
-      couponDiscount = Math.round(subtotal * appliedCoupon.value / 100);
-      couponLabel = `Cupom ${appliedCoupon.code} (${appliedCoupon.value}%)`;
-    } else if (appliedCoupon.type === 'fixed') {
-      couponDiscount = appliedCoupon.value;
-      couponLabel = `Cupom ${appliedCoupon.code}`;
-    } else if (appliedCoupon.type === 'freeship') {
-      couponDiscount = frete;
-      couponLabel = `Cupom ${appliedCoupon.code} (frete grátis)`;
-    }
-  }
-
-  const total = Math.max(0, subtotal + frete - discount - couponDiscount);
+  const total = Math.max(0, subtotal + frete);
 
   document.getElementById('sumSubtotal').textContent = 'R$ ' + subtotal;
   document.getElementById('sumFrete').textContent = frete === 0 && currentCepData ? 'GRÁTIS' : (currentCepData ? 'R$ ' + frete : '—');
-  const dRow = document.getElementById('sumDiscountRow');
-  if (discount > 0) {
-    dRow.style.display = 'flex';
-    document.getElementById('sumDiscountLabel').textContent = discountLabel;
-    document.getElementById('sumDiscount').textContent = '- R$ ' + discount;
-  } else {
-    dRow.style.display = 'none';
-  }
-  const cRow = document.getElementById('sumCouponRow');
-  if (couponDiscount > 0) {
-    cRow.style.display = 'flex';
-    document.getElementById('sumCouponLabel').textContent = couponLabel;
-    document.getElementById('sumCoupon').textContent = '- R$ ' + couponDiscount;
-  } else {
-    cRow.style.display = 'none';
-  }
   document.getElementById('sumTotal').textContent = 'R$ ' + total;
 }
 
@@ -3014,20 +2793,8 @@ function finalizeOrder() {
   const tabela = FRETE_TABLE[currentCepData.uf];
   let frete = selectedShipping === 'sedex' ? tabela.sedex : tabela.pac;
   if (selectedShipping === 'pac' && subtotal >= FRETE_GRATIS_MIN) frete = 0;
-  let discount = 0;
-  if (selectedPayment === 'pix') discount = Math.round(subtotal * 0.05);
 
-  // Cupom
-  let couponDiscount = 0;
-  let couponTxt = '';
-  if (appliedCoupon) {
-    if (appliedCoupon.type === 'percent') couponDiscount = Math.round(subtotal * appliedCoupon.value / 100);
-    else if (appliedCoupon.type === 'fixed') couponDiscount = appliedCoupon.value;
-    else if (appliedCoupon.type === 'freeship') couponDiscount = frete;
-    couponTxt = `*Cupom ${appliedCoupon.code}:* - R$ ${couponDiscount}\n`;
-  }
-
-  const total = Math.max(0, subtotal + frete - discount - couponDiscount);
+  const total = Math.max(0, subtotal + frete);
 
   // Compose WhatsApp message
   const itens = cart.map(p => {
@@ -3035,7 +2802,7 @@ function finalizeOrder() {
     const persoTxt = p.perso ? ` [Personalizado: ${p.perso.name || ''} ${p.perso.num ? '#'+p.perso.num : ''}]` : '';
     return `• ${p.club} — ${p.name} (Tam ${p.size})${persoTxt} x${p.qty} — R$ ${unit * p.qty}`;
   }).join('\n');
-  const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n*Itens:*\n${itens}\n\n*Endereço:*\n${currentCepData.logradouro || ''}, ${currentCepData.bairro || ''}\n${currentCepData.localidade} — ${currentCepData.uf}\nCEP: ${currentCepData.cep}\n\n*Frete:* ${selectedShipping.toUpperCase()} — ${frete === 0 ? 'GRÁTIS' : 'R$ ' + frete}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n${discount > 0 ? '*Desconto:* R$ ' + discount + '\n' : ''}${couponTxt}*Total: R$ ${total}*`;
+  const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n*Itens:*\n${itens}\n\n*Endereço:*\n${currentCepData.logradouro || ''}, ${currentCepData.bairro || ''}\n${currentCepData.localidade} — ${currentCepData.uf}\nCEP: ${currentCepData.cep}\n\n*Frete:* ${selectedShipping.toUpperCase()} — ${frete === 0 ? 'GRÁTIS' : 'R$ ' + frete}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n*Total: R$ ${total}*`;
   const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
   // Salva pedido no histórico do usuário (se logado)
@@ -3049,9 +2816,6 @@ function finalizeOrder() {
       shipping: selectedShipping,
       shippingValue: frete,
       payment: selectedPayment,
-      discount: discount,
-      coupon: appliedCoupon ? appliedCoupon.code : null,
-      couponDiscount: couponDiscount,
       total: total,
       status: 'pending',
       statusLabel: 'Aguardando Pagamento'
@@ -3061,12 +2825,11 @@ function finalizeOrder() {
   if (selectedPayment === 'pix') {
     openPix(total, waUrl);
   } else if (selectedPayment === 'cartao') {
-    const freteComDesconto = Math.max(0, frete - couponDiscount);
-    checkoutPagSeguro({ cart, frete: freteComDesconto, selectedShipping, total, discount, couponDiscount });
+    checkoutStripe({ cart, frete, selectedShipping, total });
   }
 }
 
-async function checkoutPagSeguro({ cart, frete, selectedShipping, total, discount, couponDiscount }) {
+async function checkoutStripe({ cart, frete, selectedShipping, total }) {
   const btn = document.getElementById('finalCheckoutBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
 
@@ -3086,8 +2849,6 @@ async function checkoutPagSeguro({ cart, frete, selectedShipping, total, discoun
       body: JSON.stringify({
         items,
         shipping: { method: selectedShipping, value: frete },
-        discount: discount || 0,
-        couponDiscount: couponDiscount || 0,
         total
       })
     });
