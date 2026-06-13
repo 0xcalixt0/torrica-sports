@@ -3205,38 +3205,67 @@ function renderAccount() {
 
 function editAccount() {
   if (!currentUser) return;
-  const newName = prompt('Nome completo:', currentUser.name);
-  if (newName === null) return;
-  const newPhone = prompt('Telefone:', currentUser.phone || '');
-  if (newPhone === null) return;
-  const newCep = prompt('CEP:', currentUser.address?.cep || '');
-  if (newCep === null) return;
-  const newRua = prompt('Rua e número:', currentUser.address?.rua || '');
-  if (newRua === null) return;
-  const newBairro = prompt('Bairro:', currentUser.address?.bairro || '');
-  if (newBairro === null) return;
-  const newCidade = prompt('Cidade:', currentUser.address?.cidade || '');
-  if (newCidade === null) return;
-  const newUf = prompt('UF (ex: SP):', currentUser.address?.uf || '');
-  if (newUf === null) return;
-  const newComplemento = prompt('Complemento (opcional):', currentUser.address?.complemento || '');
-  if (newComplemento === null) return;
+  const u = currentUser;
+  document.getElementById('editName').value = u.name || '';
+  document.getElementById('editPhone').value = u.phone || '';
+  document.getElementById('editCep').value = u.address?.cep || '';
+  document.getElementById('editRua').value = u.address?.rua || '';
+  document.getElementById('editComplemento').value = u.address?.complemento || '';
+  document.getElementById('editBairro').value = u.address?.bairro || '';
+  document.getElementById('editCidade').value = u.address?.cidade || '';
+  document.getElementById('editUf').value = u.address?.uf || '';
+  document.getElementById('editAccountError').classList.remove('visible');
+  document.getElementById('editAccountModal').classList.add('open');
+}
+
+function closeEditAccount() {
+  document.getElementById('editAccountModal').classList.remove('open');
+}
+
+async function autofillEditAddress(input) {
+  const cep = input.value.replace(/\D/g, '');
+  if (cep.length !== 8) return;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const data = await res.json();
+    if (data.erro) return;
+    const rua = document.getElementById('editRua');
+    const bairro = document.getElementById('editBairro');
+    const cidade = document.getElementById('editCidade');
+    const uf = document.getElementById('editUf');
+    if (rua && !rua.value) rua.value = data.logradouro || '';
+    if (bairro && !bairro.value) bairro.value = data.bairro || '';
+    if (cidade) cidade.value = data.localidade || '';
+    if (uf) uf.value = data.uf || '';
+  } catch(e) {}
+}
+
+function saveEditAccount() {
+  const name = document.getElementById('editName').value.trim();
+  const phone = document.getElementById('editPhone').value.trim();
+  const cep = document.getElementById('editCep').value.trim();
+  const rua = document.getElementById('editRua').value.trim();
+  const complemento = document.getElementById('editComplemento').value.trim();
+  const bairro = document.getElementById('editBairro').value.trim();
+  const cidade = document.getElementById('editCidade').value.trim();
+  const uf = document.getElementById('editUf').value.trim();
+
+  const errEl = document.getElementById('editAccountError');
+  if (!name || name.length < 3) {
+    errEl.textContent = 'Digite seu nome completo.';
+    errEl.classList.add('visible');
+    return;
+  }
 
   const users = getUsers();
-  users[currentUser.email].name = newName.trim();
-  users[currentUser.email].phone = newPhone.trim();
-  users[currentUser.email].address = {
-    cep: newCep.trim(),
-    rua: newRua.trim(),
-    bairro: newBairro.trim(),
-    cidade: newCidade.trim(),
-    uf: newUf.trim().toUpperCase(),
-    complemento: newComplemento.trim()
-  };
+  users[currentUser.email].name = name;
+  users[currentUser.email].phone = phone;
+  users[currentUser.email].address = { cep, rua, complemento, bairro, cidade, uf };
   currentUser = users[currentUser.email];
   saveUsers(users);
   updateUserUI();
   renderAccount();
+  closeEditAccount();
 }
 
 // ===== Google Sign-In =====
@@ -3644,6 +3673,59 @@ renderPromos();
   <img id="zoomImg" src="" alt="">
 </div>
 
+
+<!-- EDIT ACCOUNT MODAL -->
+<div class="auth-modal" id="editAccountModal">
+  <div class="auth-content" style="max-width:480px">
+    <button class="auth-close" onclick="closeEditAccount()">✕</button>
+    <h2 class="auth-title">✏️ Editar Dados</h2>
+
+    <div style="border-bottom:1px solid var(--border);margin-bottom:1.2rem;padding-bottom:1.2rem">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:600;margin-bottom:.8rem">Dados pessoais</div>
+      <div class="auth-field">
+        <label class="auth-label">Nome completo</label>
+        <input type="text" class="auth-input" id="editName" placeholder="João da Silva">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Telefone</label>
+        <input type="text" class="auth-input" id="editPhone" placeholder="(51) 99999-9999" maxlength="15" oninput="formatPhone(this)">
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:600;margin-bottom:.8rem">Endereço de entrega</div>
+      <div class="auth-field">
+        <label class="auth-label">CEP</label>
+        <input type="text" class="auth-input" id="editCep" placeholder="00000-000" maxlength="9" oninput="formatCep(this);autofillEditAddress(this)">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Rua e número</label>
+        <input type="text" class="auth-input" id="editRua" placeholder="Rua das Flores, 123">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Complemento (opcional)</label>
+        <input type="text" class="auth-input" id="editComplemento" placeholder="Apto 42, Bloco B">
+      </div>
+      <div style="display:flex;gap:.6rem">
+        <div class="auth-field" style="flex:1">
+          <label class="auth-label">Bairro</label>
+          <input type="text" class="auth-input" id="editBairro" placeholder="Centro">
+        </div>
+        <div class="auth-field" style="flex:1">
+          <label class="auth-label">Cidade</label>
+          <input type="text" class="auth-input" id="editCidade" placeholder="São Paulo">
+        </div>
+        <div class="auth-field" style="flex:.5">
+          <label class="auth-label">UF</label>
+          <input type="text" class="auth-input" id="editUf" placeholder="SP" maxlength="2" oninput="this.value=this.value.toUpperCase()">
+        </div>
+      </div>
+    </div>
+
+    <div id="editAccountError" class="auth-error"></div>
+    <button class="auth-submit" onclick="saveEditAccount()">💾 Salvar alterações</button>
+  </div>
+</div>
 
 <!-- AUTH MODAL -->
 <div class="auth-modal" id="authModal">
