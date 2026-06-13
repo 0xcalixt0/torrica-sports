@@ -3487,6 +3487,27 @@ document.addEventListener('visibilitychange', () => {
 renderPromos();
 checkAbandonedCart();
 
+// Expõe funções globalmente (necessário com type="module")
+Object.assign(window, {
+  openAuth, closeAuth, switchAuthTab, switchLoginMethod,
+  doLogin, doSignup, logout,
+  openCart, closeCart, closeAll,
+  openModal, closeModal, selectSize, addFromModal, toggleFavFromModal,
+  removeFromCart, quickAdd,
+  selectPayment, selectShipping, lookupCep, finalizeOrder,
+  openAccount, closeAccount, editAccount, closeEditAccount, saveEditAccount,
+  openPix, closePix, copyPix, confirmPixViaWhats,
+  toggleTheme, onUserBtnClick,
+  openReviewForm, submitReview,
+  openZoom, closeZoom,
+  openCartFromToast, hideToast,
+  recoverCart, closeAbandoned, discardAbandoned,
+  promoGoto, promoNav,
+  shareWhatsApp, shareLink, shareNative,
+  formatCep, autofillAddress, autofillEditAddress,
+  formatCpf, formatPhone
+});
+
 </script>
 <!-- CARRINHO ABANDONADO -->
 <div id="abandonedOverlay">
