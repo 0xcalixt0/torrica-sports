@@ -4,60 +4,74 @@ export default async function handler(req, res) {
   }
 
   const TOKEN = process.env.PAGSEGURO_TOKEN;
-  const EMAIL = process.env.PAGSEGURO_EMAIL;
 
-  if (!TOKEN || !EMAIL) {
-    return res.status(500).json({ error: 'Credenciais nao configuradas' });
+  if (!TOKEN) {
+    return res.status(500).json({ error: 'Token nao configurado' });
   }
 
   const { items, shipping, total } = req.body;
 
   if (!items || !items.length || !total) {
-    return res.status(400).json({ error: 'Dados do pedido invalidos' });
+    return res.status(400).json({ error: 'Dados invalidos' });
   }
 
   try {
-    const itemsXml = items.map((item, i) => {
-      const desc = `${item.club} ${item.name} Tam ${item.size}${item.perso ? ' Personalizado' : ''}`;
-      const cleanDesc = desc.replace(/[^a-zA-Z0-9 \-\.]/g, ' ').substring(0, 100).trim();
-      const price = Math.max(0.01, parseFloat(item.price)).toFixed(2);
-      const qty = parseInt(item.qty) || 1;
-      return `<item><id>${i + 1}</id><description>${cleanDesc}</description><amount>${price}</amount><quantity>${qty}</quantity></item>`;
-    }).join('');
+    // Monta itens para API v4
+    const psItems = items.map((item, i) => ({
+      reference_id: `item-${i + 1}`,
+      name: `${item.club} ${item.name} Tam ${item.size}`.replace(/[^a-zA-Z0-9 \-]/g, ' ').substring(0, 64).trim(),
+      quantity: parseInt(item.qty) || 1,
+      unit_amount: Math.round(Math.max(0.01, parseFloat(item.price)) * 100) // centavos
+    }));
 
-    const shippingXml = shipping && shipping.value > 0
-      ? `<shipping><type>3</type><cost>${parseFloat(shipping.value).toFixed(2)}</cost></shipping>`
-      : `<shipping><type>3</type><cost>0.00</cost></shipping>`;
+    const shippingAmount = shipping && shipping.value > 0
+      ? Math.round(parseFloat(shipping.value) * 100)
+      : 0;
 
-    const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><checkout><currency>BRL</currency><items>${itemsXml}</items>${shippingXml}<redirectURL>https://www.torricasports.shop</redirectURL><maxUses>1</maxUses><maxAge>3600</maxAge></checkout>`;
+    const body = {
+      reference_id: `pedido-${Date.now()}`,
+      customer_modifiable: true,
+      items: psItems,
+      shipping: {
+        type: 'FIXED',
+        amount: shippingAmount
+      },
+      redirect_url: 'https://www.torricasports.shop',
+      return_url: 'https://www.torricasports.shop',
+      payment_methods: [
+        { type: 'CREDIT_CARD' },
+        { type: 'DEBIT_CARD' },
+        { type: 'PIX' },
+        { type: 'BOLETO' }
+      ]
+    };
 
-    const url = `https://ws.pagseguro.uol.com.br/v2/checkout?email=${encodeURIComponent(EMAIL)}&token=${encodeURIComponent(TOKEN)}`;
-
-    const response = await fetch(url, {
+    const response = await fetch('https://api.pagseguro.com/checkouts', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/xml; charset=UTF-8'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${TOKEN}`
       },
-      body: xml
+      body: JSON.stringify(body)
     });
 
-    const text = await response.text();
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error('PagSeguro HTTP', response.status, text);
-      return res.status(502).json({ error: 'Erro PagSeguro', detail: text, status: response.status });
+      console.error('PagSeguro v4 error:', JSON.stringify(data));
+      return res.status(502).json({ error: 'Erro PagSeguro', detail: data });
     }
 
-    const codeMatch = text.match(/<code>([^<]+)<\/code>/);
-    if (!codeMatch) {
-      console.error('Sem code na resposta:', text);
-      return res.status(502).json({ error: 'Code nao encontrado', detail: text });
+    // Pega o link de pagamento
+    const paymentLink = data.links?.find(l => l.rel === 'PAY')?.href
+      || data.links?.[0]?.href;
+
+    if (!paymentLink) {
+      console.error('Sem link de pagamento:', JSON.stringify(data));
+      return res.status(502).json({ error: 'Link nao encontrado', detail: data });
     }
 
-    const code = codeMatch[1];
-    const redirectUrl = `https://pagseguro.uol.com.br/v2/checkout/payment.html?code=${code}`;
-
-    return res.status(200).json({ redirectUrl, code });
+    return res.status(200).json({ redirectUrl: paymentLink });
 
   } catch (err) {
     console.error('Checkout error:', err);
