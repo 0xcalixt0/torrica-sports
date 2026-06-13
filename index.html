@@ -3061,11 +3061,12 @@ function finalizeOrder() {
   if (selectedPayment === 'pix') {
     openPix(total, waUrl);
   } else if (selectedPayment === 'cartao') {
-    checkoutPagSeguro({ cart, frete, selectedShipping, total });
+    const freteComDesconto = Math.max(0, frete - couponDiscount);
+    checkoutPagSeguro({ cart, frete: freteComDesconto, selectedShipping, total, discount, couponDiscount });
   }
 }
 
-async function checkoutPagSeguro({ cart, frete, selectedShipping, total }) {
+async function checkoutPagSeguro({ cart, frete, selectedShipping, total, discount, couponDiscount }) {
   const btn = document.getElementById('finalCheckoutBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
 
@@ -3085,6 +3086,8 @@ async function checkoutPagSeguro({ cart, frete, selectedShipping, total }) {
       body: JSON.stringify({
         items,
         shipping: { method: selectedShipping, value: frete },
+        discount: discount || 0,
+        couponDiscount: couponDiscount || 0,
         total
       })
     });
@@ -3092,8 +3095,8 @@ async function checkoutPagSeguro({ cart, frete, selectedShipping, total }) {
     const data = await res.json();
 
     if (!res.ok || !data.redirectUrl) {
-      alert('Erro ao conectar com o PagSeguro. Tente novamente ou finalize via Pix.');
-      console.error('PagSeguro:', data);
+      alert('Erro ao conectar com o pagamento. Tente novamente ou finalize via Pix.');
+      console.error('Stripe:', data);
       return;
     }
 
