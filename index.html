@@ -851,13 +851,15 @@
   .auth-modal {
     position: fixed; inset: 0; z-index: 350;
     background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
-    display: none; align-items: center; justify-content: center; padding: 1rem;
+    display: none; align-items: flex-start; justify-content: center;
+    padding: 1rem; overflow-y: auto;
   }
   .auth-modal.open { display: flex; }
   .auth-content {
     background: var(--surface); border: 1px solid var(--border);
     width: 100%; max-width: 420px; padding: 2.2rem;
     border-radius: 6px; position: relative;
+    margin: auto;
   }
   .auth-close {
     position: absolute; top: 16px; right: 16px;
