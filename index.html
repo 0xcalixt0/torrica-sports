@@ -2613,6 +2613,24 @@ function formatCep(input) {
   input.value = v;
 }
 
+async function autofillAddress(input) {
+  const cep = input.value.replace(/\D/g, '');
+  if (cep.length !== 8) return;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const data = await res.json();
+    if (data.erro) return;
+    const rua = document.getElementById('signupRua');
+    const bairro = document.getElementById('signupBairro');
+    const cidade = document.getElementById('signupCidade');
+    const uf = document.getElementById('signupUf');
+    if (rua && !rua.value) rua.value = data.logradouro || '';
+    if (bairro && !bairro.value) bairro.value = data.bairro || '';
+    if (cidade) cidade.value = data.localidade || '';
+    if (uf) uf.value = data.uf || '';
+  } catch(e) {}
+}
+
 async function lookupCep() {
   const cepInput = document.getElementById('cepInput');
   const result = document.getElementById('cepResult');
@@ -2727,8 +2745,10 @@ function finalizeOrder() {
     const persoTxt = p.perso ? ` [Personalizado: ${p.perso.name || ''} ${p.perso.num ? '#'+p.perso.num : ''}]` : '';
     return `• ${p.club} — ${p.name} (Tam ${p.size})${persoTxt} x${p.qty} — R$ ${unit * p.qty}`;
   }).join('\n');
+  const addr = currentUser?.address;
+  const addrTxt = addr?.rua ? `*Endereço:* ${addr.rua}${addr.complemento ? ', ' + addr.complemento : ''}, ${addr.bairro} — ${addr.cidade}/${addr.uf}, CEP: ${addr.cep}\n` : `*Endereço:* ${currentCepData.logradouro || ''}, ${currentCepData.bairro || ''}\n${currentCepData.localidade} — ${currentCepData.uf}\nCEP: ${currentCepData.cep}\n`;
   const clienteTxt = currentUser ? `*Cliente:* ${currentUser.name}\n*E-mail:* ${currentUser.email}\n*Telefone:* ${currentUser.phone || '—'}\n\n` : '';
-  const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n${clienteTxt}*Itens:*\n${itens}\n\n*Endereço:*\n${currentCepData.logradouro || ''}, ${currentCepData.bairro || ''}\n${currentCepData.localidade} — ${currentCepData.uf}\nCEP: ${currentCepData.cep}\n\n*Frete:* ${selectedShipping.toUpperCase()} — ${frete === 0 ? 'GRÁTIS' : 'R$ ' + frete}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n*Total: R$ ${total}*`;
+  const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n${clienteTxt}*Itens:*\n${itens}\n\n${addrTxt}\n*Frete:* ${selectedShipping.toUpperCase()} — ${frete === 0 ? 'GRÁTIS' : 'R$ ' + frete}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n*Total: R$ ${total}*`;
   const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
   if (selectedPayment === 'pix') {
@@ -3021,6 +3041,12 @@ function doSignup() {
   const cpf = document.getElementById('signupCpf').value.trim();
   const phone = document.getElementById('signupPhone').value.trim();
   const password = document.getElementById('signupPassword').value;
+  const cep = document.getElementById('signupCep').value.trim();
+  const rua = document.getElementById('signupRua').value.trim();
+  const bairro = document.getElementById('signupBairro').value.trim();
+  const cidade = document.getElementById('signupCidade').value.trim();
+  const uf = document.getElementById('signupUf').value.trim();
+  const complemento = document.getElementById('signupComplemento').value.trim();
 
   if (!name || name.length < 3) return showError('signupError', 'Digite seu nome completo.');
   if (!email.includes('@')) return showError('signupError', 'E-mail inválido.');
@@ -3036,6 +3062,7 @@ function doSignup() {
 
   const user = {
     name, email, cpf, phone,
+    address: { cep, rua, bairro, cidade, uf, complemento },
     password: hashPassword(password),
     createdAt: new Date().toISOString(),
     provider: 'email'
@@ -3163,6 +3190,10 @@ function renderAccount() {
       <div class="account-info-value">${u.phone || '—'}</div>
     </div>
     <div class="account-info-row">
+      <div class="account-info-label">Endereço</div>
+      <div class="account-info-value">${u.address ? `${u.address.rua}${u.address.complemento ? ', ' + u.address.complemento : ''}<br>${u.address.bairro} — ${u.address.cidade}/${u.address.uf}<br>CEP: ${u.address.cep}` : '—'}</div>
+    </div>
+    <div class="account-info-row">
       <div class="account-info-label">Cadastro</div>
       <div class="account-info-value">${u.provider === 'google' ? '🟢 Google' : '📧 E-mail e Senha'}</div>
     </div>
@@ -3178,9 +3209,30 @@ function editAccount() {
   if (newName === null) return;
   const newPhone = prompt('Telefone:', currentUser.phone || '');
   if (newPhone === null) return;
+  const newCep = prompt('CEP:', currentUser.address?.cep || '');
+  if (newCep === null) return;
+  const newRua = prompt('Rua e número:', currentUser.address?.rua || '');
+  if (newRua === null) return;
+  const newBairro = prompt('Bairro:', currentUser.address?.bairro || '');
+  if (newBairro === null) return;
+  const newCidade = prompt('Cidade:', currentUser.address?.cidade || '');
+  if (newCidade === null) return;
+  const newUf = prompt('UF (ex: SP):', currentUser.address?.uf || '');
+  if (newUf === null) return;
+  const newComplemento = prompt('Complemento (opcional):', currentUser.address?.complemento || '');
+  if (newComplemento === null) return;
+
   const users = getUsers();
   users[currentUser.email].name = newName.trim();
   users[currentUser.email].phone = newPhone.trim();
+  users[currentUser.email].address = {
+    cep: newCep.trim(),
+    rua: newRua.trim(),
+    bairro: newBairro.trim(),
+    cidade: newCidade.trim(),
+    uf: newUf.trim().toUpperCase(),
+    complemento: newComplemento.trim()
+  };
   currentUser = users[currentUser.email];
   saveUsers(users);
   updateUserUI();
@@ -3669,6 +3721,32 @@ renderPromos();
       <div class="auth-field">
         <label class="auth-label">Senha</label>
         <input type="password" class="auth-input" id="signupPassword" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">CEP</label>
+        <input type="text" class="auth-input" id="signupCep" placeholder="00000-000" maxlength="9" oninput="formatCep(this);autofillAddress(this)">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Rua e número</label>
+        <input type="text" class="auth-input" id="signupRua" placeholder="Rua das Flores, 123">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Bairro</label>
+        <input type="text" class="auth-input" id="signupBairro" placeholder="Centro">
+      </div>
+      <div style="display:flex;gap:.6rem">
+        <div class="auth-field" style="flex:2">
+          <label class="auth-label">Cidade</label>
+          <input type="text" class="auth-input" id="signupCidade" placeholder="São Paulo">
+        </div>
+        <div class="auth-field" style="flex:1">
+          <label class="auth-label">UF</label>
+          <input type="text" class="auth-input" id="signupUf" placeholder="SP" maxlength="2" oninput="this.value=this.value.toUpperCase()">
+        </div>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Complemento (opcional)</label>
+        <input type="text" class="auth-input" id="signupComplemento" placeholder="Apto 42, Bloco B">
       </div>
 
       <button class="auth-submit" onclick="doSignup()">Criar Conta</button>
