@@ -1766,11 +1766,20 @@
     <!-- STEP: CEP / Frete (shown when logged in) -->
     <div class="checkout-step" id="cepStep" style="display:none">
       <h4>📍 Calcular Frete</h4>
-      <div class="cep-input-row">
-        <input type="text" class="cep-input" id="cepInput" placeholder="00000-000" maxlength="9" oninput="formatCep(this)">
-        <button class="cep-btn" id="cepBtn" onclick="lookupCep()">Calcular</button>
+
+      <!-- Entrega local grátis -->
+      <label style="display:flex;align-items:center;gap:.6rem;padding:.8rem;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;margin-bottom:.8rem;font-size:.85rem;">
+        <input type="checkbox" id="localDelivery" onchange="toggleLocalDelivery(this)" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;">
+        <span>🏠 <strong>Entrega grátis</strong> para Torres-RS e Região</span>
+      </label>
+
+      <div id="cepBlock">
+        <div class="cep-input-row">
+          <input type="text" class="cep-input" id="cepInput" placeholder="00000-000" maxlength="9" oninput="formatCep(this)">
+          <button class="cep-btn" id="cepBtn" onclick="lookupCep()">Calcular</button>
+        </div>
+        <div class="cep-result" id="cepResult"></div>
       </div>
-      <div class="cep-result" id="cepResult"></div>
     </div>
 
     <!-- STEP: Payment -->
@@ -1841,35 +1850,14 @@ onAuthStateChanged(window.fbAuth, (user) => {
 
 <script>
 const products = [
-  // NACIONAIS — Brasileirão Série A (20 clubes)
-  // Pra adicionar foto real do produto, inclua o campo: image:'URL_DA_FOTO' em cada item
+  // CAMISA TESTE
   { id:999, club:'TESTE', name:'Camisa Teste R$1', price:1, badge:null, color1:'#333', color2:'#555', num:'0', cat:'brasil' },
+  // NACIONAIS — apenas com fotos
   { id:15, club:'Internacional',   name:'Reserva Torcedor 25/26', price:139, badge:'new', color1:'#f5f5f5', color2:'#c8102e', num:'7',  cat:'brasil', images:['fotos/internacional-reserva-torcedor1.jpg','fotos/internacional-reserva-torcedor2.jpg','fotos/internacional-reserva-torcedor3.jpg'] },
   { id:27, club:'Internacional',   name:'Titular Torcedor 25/26', price:139, badge:'new', color1:'#c8102e', color2:'#5a0a14', num:'7',  cat:'brasil', images:['fotos/internacional-titular-torcedor1.jpg','fotos/internacional-titular-torcedor2.jpg','fotos/internacional-titular-torcedor3.jpg','fotos/internacional-titular-torcedor4.jpg'] },
   { id:28, club:'Internacional',   name:'Titular Torcedor Manga Longa 25/26', price:139, badge:'new', color1:'#c8102e', color2:'#5a0a14', num:'7',  cat:'brasil', images:['fotos/internacional-titular-torcedor-manga-longa1.jpg','fotos/internacional-titular-torcedor-manga-longa2.jpg','fotos/internacional-titular-torcedor-manga-longa3.jpg','fotos/internacional-titular-torcedor-manga-longa4.jpg','fotos/internacional-titular-torcedor-manga-longa5.jpg'] },
   { id:29, club:'Internacional',   name:'Titular Torcedor 26/27', price:139, badge:'new', color1:'#c8102e', color2:'#5a0a14', num:'7',  cat:'brasil', images:['fotos/internacional-titular-torcedor1-26-1.jpg','fotos/internacional-titular-torcedor1-26-2.jpg','fotos/internacional-titular-torcedor1-26-3.jpeg','fotos/internacional-titular-torcedor1-26-4.jpeg','fotos/internacional-titular-torcedor1-26-5.jpeg'] },
-
-  // INTERNACIONAIS — Top 20 clubes europeus
-  { id:5, club:'Real Madrid', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#e8e8e8', color2:'#c0c0c0', num:'10', cat:'europa' },
-  { id:6, club:'Barcelona', name:'Camisa I 2025/26', price:139, badge:null, color1:'#004d98', color2:'#a50044', num:'17', cat:'europa' },
-  { id:7, club:'Manchester City', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#6cabdd', color2:'#0077a8', num:'9', cat:'europa' },
-  { id:8, club:'Bayern Munich', name:'Camisa I 2025/26', price:139, badge:'sale', oldPrice:189, color1:'#dc052d', color2:'#a00022', num:'25', cat:'europa' },
-  { id:11, club:'Liverpool', name:'Camisa I 2025/26', price:139, badge:null, color1:'#c8102e', color2:'#5a0a14', num:'11', cat:'europa' },
-  { id:12, club:'PSG', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#0a1a3d', color2:'#e30613', num:'7', cat:'europa' },
-  { id:27, club:'Manchester United', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#da291c', color2:'#4a0a14', num:'10', cat:'europa' },
-  { id:28, club:'Chelsea', name:'Camisa I 2025/26', price:139, badge:null, color1:'#034694', color2:'#001a52', num:'10', cat:'europa' },
-  { id:29, club:'Arsenal', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#ef0107', color2:'#023474', num:'9', cat:'europa' },
-  { id:30, club:'Tottenham', name:'Camisa I 2025/26', price:139, badge:null, color1:'#f5f5f5', color2:'#132257', num:'10', cat:'europa' },
-  { id:31, club:'Atlético de Madrid', name:'Camisa I 2025/26', price:139, badge:null, color1:'#cb3524', color2:'#272e61', num:'7', cat:'europa' },
-  { id:32, club:'Juventus', name:'Camisa I 2025/26', price:139, badge:'sale', oldPrice:189, color1:'#0a0a0a', color2:'#f5f5f5', num:'10', cat:'europa' },
-  { id:33, club:'Milan', name:'Camisa I 2025/26', price:139, badge:null, color1:'#fb090b', color2:'#0a0a0a', num:'11', cat:'europa' },
-  { id:34, club:'Inter Milan', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#003791', color2:'#0a0a0a', num:'9', cat:'europa' },
-  { id:35, club:'Napoli', name:'Camisa I 2025/26', price:139, badge:null, color1:'#0084d1', color2:'#003a7a', num:'10', cat:'europa' },
-  { id:36, club:'Roma', name:'Camisa I 2025/26', price:139, badge:null, color1:'#8e1f2f', color2:'#f0bc42', num:'7', cat:'europa' },
-  { id:37, club:'Borussia Dortmund', name:'Camisa I 2025/26', price:139, badge:'new', color1:'#fde100', color2:'#0a0a0a', num:'11', cat:'europa' },
-  { id:38, club:'Bayer Leverkusen', name:'Camisa I 2025/26', price:139, badge:null, color1:'#e32219', color2:'#0a0a0a', num:'10', cat:'europa' },
-  { id:39, club:'Porto', name:'Camisa I 2025/26', price:139, badge:null, color1:'#013594', color2:'#f5f5f5', num:'7', cat:'europa' },
-  { id:40, club:'Benfica', name:'Camisa I 2025/26', price:139, badge:null, color1:'#cc092f', color2:'#6a0a1a', num:'9', cat:'europa' },
+  { id:10, club:'Grêmio',          name:'Titular Torcedor 26/27', price:139, badge:'new', color1:'#0a4ea2', color2:'#0a1a3d', num:'10', cat:'brasil', images:['fotos/gremio-titular-torcedor1.jpg','fotos/gremio-titular-torcedor2.jpg','fotos/gremio-titular-torcedor3.jpg','fotos/gremio-titular-torcedor4.jpg'] },
 ];
 
 const selecoesProducts = [
@@ -1896,14 +1884,6 @@ const selecoesProducts = [
 ];
 
 const retroProducts = [
-  { id:101, club:'Brasil', name:'Camisa 1970 — Pelé', price:139, color1:'#fde047', color2:'#bfa019', num:'10' },
-  { id:102, club:'Argentina', name:'Camisa 1986 — Maradona', price:139, color1:'#7dd3fc', color2:'#0369a1', num:'10' },
-  { id:103, club:'Milan', name:'Camisa 1989/90', price:139, color1:'#9b1c1c', color2:'#1a1a1a', num:'9' },
-  { id:104, club:'França', name:'Camisa 1998 — Zidane', price:139, color1:'#1e40af', color2:'#0a1a3d', num:'10' },
-  { id:105, club:'Manchester United', name:'Camisa 1999 — Treble', price:139, color1:'#c8102e', color2:'#5a0a14', num:'7' },
-  { id:106, club:'Holanda', name:'Camisa 1988 — Van Basten', price:139, color1:'#ea580c', color2:'#7c2d12', num:'12' },
-  { id:107, club:'Brasil', name:'Camisa 2002 — Penta', price:139, color1:'#fde047', color2:'#86700a', num:'9' },
-  { id:108, club:'Boca Juniors', name:'Camisa 1981 — Maradona', price:139, color1:'#1e3a8a', color2:'#facc15', num:'10' },
   { id:109, club:'Real Madrid', name:'Reserva 1999', price:139, badge:null, color1:'#e8e8e8', color2:'#c0a030', num:'10', images:['fotos/retro-real-madrid-reserva-1999-1.jpg','fotos/retro-real-madrid-reserva-1999-2.jpg','fotos/retro-real-madrid-reserva-1999-3.jpg','fotos/retro-real-madrid-reserva-1999-4.jpg','fotos/retro-real-madrid-reserva-1999-5.jpg'] },
   { id:110, club:'Real Madrid', name:'Reserva 2006', price:139, badge:null, color1:'#e8e8e8', color2:'#c0a030', num:'10', images:['fotos/retro-real-madrid-reserva-2006-1.jpg','fotos/retro-real-madrid-reserva-2006-2.jpg','fotos/retro-real-madrid-reserva-2006-3.jpg','fotos/retro-real-madrid-reserva-2006-4.jpg','fotos/retro-real-madrid-reserva-2006-5.jpg'] },
   { id:111, club:'Real Madrid', name:'Titular 2005', price:139, badge:null, color1:'#f5f5f5', color2:'#c0a030', num:'10', images:['fotos/retro-real-madrid-titular-2005-1.jpg','fotos/retro-real-madrid-titular-2005-2.jpg','fotos/retro-real-madrid-titular-2005-3.jpg','fotos/retro-real-madrid-titular-2005-4.jpg','fotos/retro-real-madrid-titular-2005-5.jpg'] },
@@ -2526,6 +2506,27 @@ function pixPayload(key, name, city, amount) {
 let selectedShipping = null;
 let selectedPayment = null;
 let currentCepData = null;
+let localDeliverySelected = false;
+
+function toggleLocalDelivery(checkbox) {
+  localDeliverySelected = checkbox.checked;
+  const cepBlock = document.getElementById('cepBlock');
+  if (localDeliverySelected) {
+    cepBlock.style.display = 'none';
+    currentCepData = { logradouro: '', bairro: '', localidade: 'Torres', uf: 'RS', cep: '95560-000' };
+    selectedShipping = 'local';
+    document.getElementById('paymentStep').style.display = 'block';
+    document.getElementById('summaryStep').style.display = 'block';
+    document.getElementById('cepResult').innerHTML = '';
+  } else {
+    cepBlock.style.display = 'block';
+    currentCepData = null;
+    selectedShipping = null;
+    document.getElementById('paymentStep').style.display = 'none';
+    document.getElementById('summaryStep').style.display = 'none';
+  }
+  updateSummary();
+}
 
 // Tabela de frete por região (UF → {nome, valor PAC, valor SEDEX, prazo})
 const FRETE_TABLE = {
@@ -2669,7 +2670,9 @@ function selectPayment(type, el) {
 function updateSummary() {
   const subtotal = cart.reduce((a,b) => a + (b.unitPrice || b.price) * b.qty, 0);
   let frete = 0;
-  if (currentCepData && selectedShipping) {
+  if (localDeliverySelected) {
+    frete = 0;
+  } else if (currentCepData && selectedShipping) {
     const tabela = FRETE_TABLE[currentCepData.uf];
     if (tabela) {
       frete = selectedShipping === 'sedex' ? tabela.sedex : tabela.pac;
@@ -2690,9 +2693,13 @@ function finalizeOrder() {
   if (!cart.length) return;
 
   const subtotal = cart.reduce((a,b) => a + (b.unitPrice || b.price) * b.qty, 0);
-  const tabela = FRETE_TABLE[currentCepData.uf];
-  let frete = selectedShipping === 'sedex' ? tabela.sedex : tabela.pac;
-  if (selectedShipping === 'pac' && subtotal >= FRETE_GRATIS_MIN) frete = 0;
+  let frete = 0;
+  if (!localDeliverySelected) {
+    const tabela = FRETE_TABLE[currentCepData.uf];
+    frete = selectedShipping === 'sedex' ? tabela.sedex : tabela.pac;
+    if (selectedShipping === 'pac' && subtotal >= FRETE_GRATIS_MIN) frete = 0;
+  }
+  const freteLabel = localDeliverySelected ? 'ENTREGA LOCAL — GRÁTIS' : `${selectedShipping.toUpperCase()} — ${frete === 0 ? 'GRÁTIS' : 'R$ ' + frete}`;
 
   const total = Math.max(0, subtotal + frete);
 
@@ -2704,7 +2711,7 @@ function finalizeOrder() {
   const addr = currentUser?.address;
   const addrTxt = addr?.rua ? `*Endereço:* ${addr.rua}${addr.complemento ? ', ' + addr.complemento : ''}, ${addr.bairro} — ${addr.cidade}/${addr.uf}, CEP: ${addr.cep}\n` : `*Endereço:* ${currentCepData.logradouro || ''}, ${currentCepData.bairro || ''}\n${currentCepData.localidade} — ${currentCepData.uf}\nCEP: ${currentCepData.cep}\n`;
   const clienteTxt = currentUser ? `*Cliente:* ${currentUser.name}\n*E-mail:* ${currentUser.email}\n*Telefone:* ${currentUser.phone || '—'}\n\n` : '';
-  const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n${clienteTxt}*Itens:*\n${itens}\n\n${addrTxt}\n*Frete:* ${selectedShipping.toUpperCase()} — ${frete === 0 ? 'GRÁTIS' : 'R$ ' + frete}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n*Total: R$ ${total}*`;
+  const msg = `🛒 *Novo Pedido — Torrica Sports*\n\n${clienteTxt}*Itens:*\n${itens}\n\n${addrTxt}\n*Frete:* ${freteLabel}\n*Pagamento:* ${selectedPayment.toUpperCase()}\n*Total: R$ ${total}*`;
   const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
   if (selectedPayment === 'pix') {
