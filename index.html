@@ -1812,7 +1812,7 @@
   </div>
 </div>
 
-<script>
+<script type="module">
 const products = [
   // NACIONAIS — Brasileirão Série A (20 clubes)
   // Pra adicionar foto real do produto, inclua o campo: image:'URL_DA_FOTO' em cada item
@@ -2883,33 +2883,39 @@ renderHeroJerseys();
 // ========== USER ACCOUNT SYSTEM ==========
 
 // >>> CONFIGURE AQUI <<<
-// Pra ativar login com Google, crie um Client ID em https://console.cloud.google.com
-// (mais detalhes nas instruções do desenvolvedor)
-const GOOGLE_CLIENT_ID = ''; // ex: '123456789-abc.apps.googleusercontent.com'
+// ========== FIREBASE AUTH + FIRESTORE ==========
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const USERS_KEY = 'torrica_users';
-const SESSION_KEY = 'torrica_session';
+const firebaseConfig = {
+  apiKey: "AIzaSyAg1HVZHpqYyehi9pLBplA42EBcinku9-M",
+  authDomain: "torrica-sports.firebaseapp.com",
+  projectId: "torrica-sports",
+  storageBucket: "torrica-sports.firebasestorage.app",
+  messagingSenderId: "791643379474",
+  appId: "1:791643379474:web:2973b223d874870a3645cb"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const fbAuth = getAuth(fbApp);
+const fbDb = getFirestore(fbApp);
 
 let currentUser = null;
 let currentAuthMethod = 'email';
 
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
-  catch(e) { return {}; }
-}
-function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-// Hash simples para senha (não use em produção real - precisa de bcrypt no backend)
-function hashPassword(pw) {
-  let h = 0;
-  for (let i = 0; i < pw.length; i++) {
-    h = ((h << 5) - h) + pw.charCodeAt(i);
-    h |= 0;
+// Monitora estado de autenticação
+onAuthStateChanged(fbAuth, async (user) => {
+  if (user) {
+    const snap = await getDoc(doc(fbDb, 'users', user.uid));
+    currentUser = snap.exists() ? { uid: user.uid, email: user.email, ...snap.data() } : { uid: user.uid, email: user.email, name: user.displayName || user.email };
+  } else {
+    currentUser = null;
   }
-  return 'h_' + h + '_' + pw.length;
-}
+  updateUserUI();
+  updateCartLoginState();
+  renderProducts();
+});
 
 function formatCpf(input) {
   let v = input.value.replace(/\D/g, '').slice(0, 11);
@@ -2962,7 +2968,7 @@ function showSuccess(id, msg) {
   el.classList.add('visible');
 }
 
-function doSignup() {
+async function doSignup() {
   ['signupError','signupSuccess'].forEach(id => document.getElementById(id).classList.remove('visible'));
   const name = document.getElementById('signupName').value.trim();
   const email = document.getElementById('signupEmail').value.trim().toLowerCase();
@@ -2982,66 +2988,55 @@ function doSignup() {
   if (phone.replace(/\D/g,'').length < 10) return showError('signupError', 'Telefone inválido.');
   if (password.length < 6) return showError('signupError', 'Senha precisa ter pelo menos 6 caracteres.');
 
-  const users = getUsers();
-  if (users[email]) return showError('signupError', 'Esse e-mail já está cadastrado.');
-  for (const u of Object.values(users)) {
-    if (u.cpf === cpf) return showError('signupError', 'Esse CPF já está cadastrado.');
+  const btn = document.querySelector('#signupPanel .auth-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Criando conta...'; }
+
+  try {
+    const cred = await createUserWithEmailAndPassword(fbAuth, email, password);
+    const userData = {
+      name, cpf, phone,
+      address: { cep, rua, bairro, cidade, uf, complemento },
+      createdAt: new Date().toISOString(),
+      provider: 'email'
+    };
+    await setDoc(doc(fbDb, 'users', cred.user.uid), userData);
+    showSuccess('signupSuccess', '✓ Conta criada! Entrando...');
+    // onAuthStateChanged cuida do resto
+  } catch(e) {
+    const msg = e.code === 'auth/email-already-in-use' ? 'Este e-mail já está cadastrado.' :
+                e.code === 'auth/weak-password' ? 'Senha muito fraca.' : 'Erro ao criar conta. Tente novamente.';
+    showError('signupError', msg);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Criar Conta'; }
   }
-
-  const user = {
-    name, email, cpf, phone,
-    address: { cep, rua, bairro, cidade, uf, complemento },
-    password: hashPassword(password),
-    createdAt: new Date().toISOString(),
-    provider: 'email'
-  };
-  users[email] = user;
-  saveUsers(users);
-
-  showSuccess('signupSuccess', '✓ Conta criada! Entrando...');
-  setTimeout(() => loginAs(user), 800);
 }
 
-function doLogin() {
+async function doLogin() {
   document.getElementById('loginError').classList.remove('visible');
-  const users = getUsers();
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value;
-  let user;
+  if (!email || !password) return showError('loginError', 'Preencha e-mail e senha.');
 
-  if (currentAuthMethod === 'email') {
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-    if (!email || !password) return showError('loginError', 'Preencha e-mail e senha.');
-    user = users[email];
-  } else {
-    const cpf = document.getElementById('loginCpf').value.trim();
-    if (!cpf || !password) return showError('loginError', 'Preencha CPF e senha.');
-    user = Object.values(users).find(u => u.cpf === cpf);
+  const btn = document.querySelector('#loginPanel .auth-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Entrando...'; }
+
+  try {
+    await signInWithEmailAndPassword(fbAuth, email, password);
+    closeAuth();
+    // onAuthStateChanged cuida do resto
+  } catch(e) {
+    const msg = e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
+      ? 'E-mail ou senha incorretos.' : 'Erro ao entrar. Tente novamente.';
+    showError('loginError', msg);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
   }
-
-  if (!user) return showError('loginError', 'Usuário não encontrado.');
-  if (user.provider !== 'email') return showError('loginError', 'Essa conta usa login com Google. Clique em "Continuar com Google".');
-  if (user.password !== hashPassword(password)) return showError('loginError', 'Senha incorreta.');
-
-  loginAs(user);
 }
 
-function loginAs(user) {
-  currentUser = user;
-  localStorage.setItem(SESSION_KEY, user.email);
-  closeAuth();
-  updateUserUI();
-  updateCartLoginState();
-  renderProducts();
-}
-
-function logout() {
-  currentUser = null;
-  localStorage.removeItem(SESSION_KEY);
+async function logout() {
+  await signOut(fbAuth);
   document.getElementById('userMenu').classList.remove('open');
-  updateUserUI();
-  updateCartLoginState();
   closeAccount();
-  renderProducts();
 }
 
 function updateUserUI() {
@@ -3168,7 +3163,7 @@ async function autofillEditAddress(input) {
   } catch(e) {}
 }
 
-function saveEditAccount() {
+async function saveEditAccount() {
   const name = document.getElementById('editName').value.trim();
   const phone = document.getElementById('editPhone').value.trim();
   const cep = document.getElementById('editCep').value.trim();
@@ -3185,68 +3180,22 @@ function saveEditAccount() {
     return;
   }
 
-  const users = getUsers();
-  users[currentUser.email].name = name;
-  users[currentUser.email].phone = phone;
-  users[currentUser.email].address = { cep, rua, complemento, bairro, cidade, uf };
-  currentUser = users[currentUser.email];
-  saveUsers(users);
-  updateUserUI();
-  renderAccount();
-  closeEditAccount();
-}
+  const btn = document.querySelector('#editAccountModal .auth-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
 
-// ===== Google Sign-In =====
-// Carrega script do Google Identity Services apenas quando necessário
-let googleLoaded = false;
-function loadGoogleScript() {
-  return new Promise((resolve, reject) => {
-    if (googleLoaded) return resolve();
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => { googleLoaded = true; resolve(); };
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
-
-async function loginWithGoogle() {
-  if (!GOOGLE_CLIENT_ID) {
-    alert('⚠️ Login com Google ainda não foi configurado.\n\nO administrador precisa criar um Client ID no Google Cloud Console e adicionar no código (variável GOOGLE_CLIENT_ID).');
-    return;
-  }
   try {
-    await loadGoogleScript();
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleResponse,
-    });
-    google.accounts.id.prompt();
+    const updates = { name, phone, address: { cep, rua, complemento, bairro, cidade, uf } };
+    await updateDoc(doc(fbDb, 'users', currentUser.uid), updates);
+    currentUser = { ...currentUser, ...updates };
+    updateUserUI();
+    renderAccount();
+    closeEditAccount();
   } catch(e) {
-    alert('Erro ao carregar o login do Google. Verifique sua conexão.');
+    errEl.textContent = 'Erro ao salvar. Tente novamente.';
+    errEl.classList.add('visible');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Salvar alterações'; }
   }
-}
-
-function handleGoogleResponse(response) {
-  // Decode JWT credential (header.payload.signature)
-  const payload = JSON.parse(atob(response.credential.split('.')[1]));
-  const email = payload.email;
-  const name = payload.name;
-  const users = getUsers();
-  let user = users[email];
-  if (!user) {
-    user = {
-      name, email, cpf: '', phone: '',
-      createdAt: new Date().toISOString(),
-      provider: 'google',
-      picture: payload.picture
-    };
-    users[email] = user;
-    saveUsers(users);
-  }
-  loginAs(user);
 }
 
 // ─── TOAST CARRINHO ──────────────────────────────────────────────
@@ -3536,19 +3485,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 renderPromos();
-
-// Restore session on load
-(function restoreSession(){
-  const email = localStorage.getItem(SESSION_KEY);
-  if (email) {
-    const users = getUsers();
-    if (users[email]) currentUser = users[email];
-  }
-  updateUserUI();
-  renderProducts();
-  checkAbandonedCart();
-})();
-
+checkAbandonedCart();
 
 </script>
 <!-- CARRINHO ABANDONADO -->
@@ -3687,13 +3624,6 @@ renderPromos();
 
       <button class="auth-submit" onclick="doLogin()">Entrar</button>
 
-      <div class="auth-divider">ou</div>
-
-      <button class="google-btn" onclick="loginWithGoogle()">
-        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Continuar com Google
-      </button>
-
       <div class="auth-switch-link">Não tem conta? <a onclick="switchAuthTab('signup')">Criar agora</a></div>
     </div>
 
@@ -3752,13 +3682,6 @@ renderPromos();
       </div>
 
       <button class="auth-submit" onclick="doSignup()">Criar Conta</button>
-
-      <div class="auth-divider">ou</div>
-
-      <button class="google-btn" onclick="loginWithGoogle()">
-        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Cadastrar com Google
-      </button>
 
       <div class="auth-switch-link">Já tem conta? <a onclick="switchAuthTab('login')">Entrar</a></div>
     </div>
