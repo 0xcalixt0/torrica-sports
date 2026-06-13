@@ -3061,11 +3061,49 @@ function finalizeOrder() {
   if (selectedPayment === 'pix') {
     openPix(total, waUrl);
   } else if (selectedPayment === 'cartao') {
-    if (MP_LINK && MP_LINK !== 'https://mpago.la/SEU-LINK') {
-      window.open(MP_LINK, '_blank');
-    } else {
-      alert('💳 Pagamento via cartão em breve! Por enquanto, finalize via Pix.');
+    checkoutPagSeguro({ cart, frete, selectedShipping, total });
+  }
+}
+
+async function checkoutPagSeguro({ cart, frete, selectedShipping, total }) {
+  const btn = document.getElementById('finalCheckoutBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Aguarde...'; }
+
+  try {
+    const items = cart.map(p => ({
+      club: p.club,
+      name: p.name,
+      size: p.size,
+      qty: p.qty,
+      price: (p.unitPrice || p.price),
+      perso: p.perso || null
+    }));
+
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items,
+        shipping: { method: selectedShipping, value: frete },
+        total
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.redirectUrl) {
+      alert('Erro ao conectar com o PagSeguro. Tente novamente ou finalize via Pix.');
+      console.error('PagSeguro:', data);
+      return;
     }
+
+    window.location.href = data.redirectUrl;
+
+  } catch (err) {
+    alert('Erro ao processar pagamento. Tente novamente.');
+    console.error(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Finalizar Compra'; }
   }
 }
 
