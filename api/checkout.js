@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Stripe key nao configurada' });
   }
 
-  const { items, shipping, discount, couponDiscount, total } = req.body;
+  const { items, shipping, total } = req.body;
 
   if (!items || !items.length || !total) {
     return res.status(400).json({ error: 'Dados invalidos' });
@@ -27,26 +27,12 @@ export default async function handler(req, res) {
       quantity: parseInt(item.qty) || 1,
     }));
 
-    // Frete já vem com desconto do cupom freeship aplicado
     if (shipping && shipping.value > 0) {
       lineItems.push({
         price_data: {
           currency: 'brl',
           product_data: { name: `Frete - ${shipping.method?.toUpperCase() || 'Entrega'}` },
           unit_amount: Math.round(parseFloat(shipping.value) * 100),
-        },
-        quantity: 1,
-      });
-    }
-
-    // Desconto Pix 5% ou desconto fixo
-    const totalDiscount = (discount || 0) + (couponDiscount || 0);
-    if (totalDiscount > 0) {
-      lineItems.push({
-        price_data: {
-          currency: 'brl',
-          product_data: { name: 'Desconto aplicado' },
-          unit_amount: -Math.round(totalDiscount * 100),
         },
         quantity: 1,
       });
