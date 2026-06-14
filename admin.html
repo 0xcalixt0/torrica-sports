@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Torrica Sports</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'DM Sans', sans-serif; background:#0a0a0a; color:#f5f5f5; min-height:100vh; }
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Bebas+Neue&display=swap');
+
+  /* LOGIN */
+  .login-screen {
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:1rem;
+  }
+  .login-box {
+    background:#161616; border:1px solid #2a2a2a; border-radius:8px;
+    padding:2.5rem; width:100%; max-width:380px;
+  }
+  .login-logo { font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#ff8c00; margin-bottom:.3rem; }
+  .login-sub { color:#888; font-size:.85rem; margin-bottom:2rem; }
+  .field { margin-bottom:1rem; }
+  .field label { display:block; font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:#888; margin-bottom:.4rem; }
+  .field input { width:100%; background:#0f0f0f; border:1px solid #2a2a2a; color:#f5f5f5; padding:.75rem 1rem; border-radius:4px; font-size:.9rem; outline:none; transition:border-color .2s; }
+  .field input:focus { border-color:#ff8c00; }
+  .btn-login { width:100%; background:#ff8c00; color:#000; border:none; padding:.85rem; font-weight:700; font-size:.9rem; text-transform:uppercase; letter-spacing:.08em; border-radius:4px; cursor:pointer; transition:opacity .2s; }
+  .btn-login:hover { opacity:.85; }
+  .login-error { color:#ef4444; font-size:.82rem; margin-top:.8rem; display:none; }
+
+  /* PAINEL */
+  .panel { display:none; }
+  .topbar {
+    background:#161616; border-bottom:1px solid #2a2a2a;
+    padding:.8rem 1.5rem; display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:100;
+  }
+  .topbar-logo { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:#ff8c00; }
+  .topbar-right { display:flex; align-items:center; gap:1rem; }
+  .topbar-email { font-size:.78rem; color:#888; }
+  .btn-logout { background:transparent; border:1px solid #2a2a2a; color:#888; padding:.4rem .9rem; border-radius:4px; cursor:pointer; font-size:.75rem; transition:all .2s; }
+  .btn-logout:hover { border-color:#ef4444; color:#ef4444; }
+
+  .content { padding:2rem 1.5rem; max-width:1100px; margin:0 auto; }
+
+  /* STATS */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .stat-card { background:#161616; border:1px solid #2a2a2a; border-radius:6px; padding:1.2rem; }
+  .stat-num { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; color:#ff8c00; line-height:1; }
+  .stat-label { font-size:.72rem; color:#888; text-transform:uppercase; letter-spacing:.08em; margin-top:.3rem; }
+
+  /* FILTROS */
+  .filters { display:flex; gap:.5rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+  .filter-btn { background:#161616; border:1px solid #2a2a2a; color:#888; padding:.45rem 1rem; border-radius:4px; cursor:pointer; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; transition:all .2s; }
+  .filter-btn.active { background:#ff8c00; border-color:#ff8c00; color:#000; font-weight:600; }
+
+  /* ORDERS */
+  .orders-list { display:flex; flex-direction:column; gap:1rem; }
+  .order-card { background:#161616; border:1px solid #2a2a2a; border-radius:6px; padding:1.3rem; }
+  .order-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; margin-bottom:.8rem; }
+  .order-id { font-family:monospace; font-size:.85rem; font-weight:600; color:#f5f5f5; }
+  .order-date { font-size:.75rem; color:#888; }
+  .order-customer { font-size:.8rem; color:#aaa; margin-bottom:.3rem; }
+  .order-address { font-size:.78rem; color:#888; margin-bottom:.6rem; }
+  .order-items { font-size:.8rem; color:#aaa; line-height:1.7; padding:.7rem 0; border-top:1px solid #2a2a2a; border-bottom:1px solid #2a2a2a; margin-bottom:.8rem; }
+  .order-footer { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+  .order-total { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; color:#ff8c00; }
+  .order-payment { font-size:.75rem; color:#888; text-transform:uppercase; }
+
+  .status-badge {
+    display:inline-block; padding:.2rem .8rem; border-radius:99px;
+    font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em;
+    margin-bottom:.6rem;
+  }
+  .status-select {
+    background:#0f0f0f; border:1px solid #2a2a2a; color:#f5f5f5;
+    padding:.5rem .8rem; border-radius:4px; font-size:.8rem; cursor:pointer;
+    font-family:'DM Sans',sans-serif;
+  }
+  .status-select:focus { outline:none; border-color:#ff8c00; }
+
+  .no-orders { text-align:center; color:#555; padding:3rem; font-size:.9rem; }
+  .loading { text-align:center; color:#555; padding:3rem; }
+
+  .search-bar { margin-bottom:1.5rem; }
+  .search-bar input {
+    width:100%; background:#161616; border:1px solid #2a2a2a; color:#f5f5f5;
+    padding:.75rem 1rem; border-radius:4px; font-size:.9rem; outline:none;
+    transition:border-color .2s;
+  }
+  .search-bar input:focus { border-color:#ff8c00; }
+
+  @media(max-width:600px) {
+    .content { padding:1rem; }
+    .topbar { padding:.7rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">⚽ Torrica Admin</div>
+    <p class="login-sub">Painel de gerenciamento de pedidos</p>
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="adminEmail" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="adminPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    </div>
+    <button class="btn-login" id="loginBtn" onclick="doAdminLogin()">Entrar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- PAINEL -->
+<div class="panel" id="panel">
+  <div class="topbar">
+    <div class="topbar-logo">⚽ Torrica Admin</div>
+    <div class="topbar-right">
+      <span class="topbar-email" id="adminEmailDisplay"></span>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats" id="statsBar"></div>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Buscar por nome, email, ID do pedido..." oninput="filterOrders()">
+    </div>
+
+    <div class="filters" id="filterBtns">
+      <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
+      <button class="filter-btn" onclick="setFilter('pending',this)">Aguardando</button>
+      <button class="filter-btn" onclick="setFilter('paid',this)">Pago</button>
+      <button class="filter-btn" onclick="setFilter('sent',this)">Enviado</button>
+      <button class="filter-btn" onclick="setFilter('delivered',this)">Entregue</button>
+      <button class="filter-btn" onclick="setFilter('cancelled',this)">Cancelado</button>
+    </div>
+
+    <div class="orders-list" id="ordersList">
+      <div class="loading">Carregando pedidos...</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collectionGroup, getDocs, doc, updateDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const ADMIN_EMAIL = 'renancalixto96@gmail.com';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAg1HVZHpqYyehi9pLBplA42EBcinku9-M",
+  authDomain: "torrica-sports.firebaseapp.com",
+  projectId: "torrica-sports",
+  storageBucket: "torrica-sports.firebasestorage.app",
+  messagingSenderId: "791643379474",
+  appId: "1:791643379474:web:2973b223d874870a3645cb"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let allOrders = [];
+let currentFilter = 'all';
+
+const STATUS_OPTIONS = [
+  { value: 'pending',   label: 'Aguardando Pagamento', color: '#f59e0b' },
+  { value: 'paid',      label: 'Pago',                 color: '#10b981' },
+  { value: 'sent',      label: 'Enviado',               color: '#3b82f6' },
+  { value: 'delivered', label: 'Entregue',              color: '#6b7280' },
+  { value: 'cancelled', label: 'Cancelado',             color: '#ef4444' },
+];
+
+// Auth state
+onAuthStateChanged(auth, user => {
+  if (user && user.email === ADMIN_EMAIL) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('panel').style.display = 'block';
+    document.getElementById('adminEmailDisplay').textContent = user.email;
+    loadOrders();
+  } else if (user) {
+    signOut(auth);
+    showLoginError('Acesso restrito ao administrador.');
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('panel').style.display = 'none';
+  }
+});
+
+// Login
+window.doAdminLogin = async () => {
+  const email = document.getElementById('adminEmail').value.trim();
+  const password = document.getElementById('adminPassword').value;
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch(e) {
+    showLoginError('E-mail ou senha incorretos.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+};
+
+window.doLogout = async () => {
+  await signOut(auth);
+};
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+// Carrega todos os pedidos via collectionGroup
+async function loadOrders() {
+  try {
+    const q = query(collectionGroup(db, 'orders'), orderBy('date', 'desc'));
+    const snap = await getDocs(q);
+    allOrders = snap.docs.map(d => ({
+      ...d.data(),
+      _ref: d.ref,
+      _userId: d.ref.parent.parent.id
+    }));
+    renderStats();
+    renderOrders();
+  } catch(e) {
+    document.getElementById('ordersList').innerHTML = `<div class="no-orders">Erro ao carregar: ${e.message}</div>`;
+  }
+}
+
+function renderStats() {
+  const total = allOrders.length;
+  const pending = allOrders.filter(o => o.status === 'pending').length;
+  const paid = allOrders.filter(o => o.status === 'paid').length;
+  const sent = allOrders.filter(o => o.status === 'sent').length;
+  const revenue = allOrders.filter(o => o.status !== 'cancelled').reduce((a,b) => a + (b.total||0), 0);
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total Pedidos</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#f59e0b">${pending}</div><div class="stat-label">Aguardando</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#10b981">${paid}</div><div class="stat-label">Pagos</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#3b82f6">${sent}</div><div class="stat-label">Enviados</div></div>
+    <div class="stat-card"><div class="stat-num">R$${revenue}</div><div class="stat-label">Faturamento</div></div>
+  `;
+}
+
+window.setFilter = (filter, btn) => {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOrders();
+};
+
+window.filterOrders = () => renderOrders();
+
+function renderOrders() {
+  const search = (document.getElementById('searchInput').value || '').toLowerCase();
+  let orders = allOrders;
+
+  if (currentFilter !== 'all') orders = orders.filter(o => o.status === currentFilter);
+  if (search) orders = orders.filter(o =>
+    (o.id||'').toLowerCase().includes(search) ||
+    (o.customerName||'').toLowerCase().includes(search) ||
+    (o.customerEmail||'').toLowerCase().includes(search) ||
+    (o.items||[]).some(i => i.club?.toLowerCase().includes(search) || i.name?.toLowerCase().includes(search))
+  );
+
+  if (!orders.length) {
+    document.getElementById('ordersList').innerHTML = '<div class="no-orders">Nenhum pedido encontrado.</div>';
+    return;
+  }
+
+  document.getElementById('ordersList').innerHTML = orders.map((o, idx) => {
+    const st = STATUS_OPTIONS.find(s => s.value === o.status) || STATUS_OPTIONS[0];
+    const items = (o.items||[]).map(i => `• ${i.club} ${i.name} (${i.size}) x${i.qty} — R$${i.price * i.qty}`).join('<br>');
+    const addr = o.address ? `${o.address.rua||''} ${o.address.complemento||''}, ${o.address.bairro||''} — ${o.address.cidade||o.address.localidade||''}/${o.address.uf||''} · CEP ${o.address.cep||''}` : '—';
+    const opts = STATUS_OPTIONS.map(s => `<option value="${s.value}" ${o.status===s.value?'selected':''}>${s.label}</option>`).join('');
+    const date = new Date(o.date).toLocaleString('pt-BR');
+
+    return `<div class="order-card" id="order-${idx}">
+      <div class="order-head">
+        <div>
+          <div class="order-id">#${o.id}</div>
+          <div class="order-customer">👤 ${o.customerName||'—'} · ${o.customerEmail||'—'}</div>
+          <div class="order-address">📍 ${addr}</div>
+        </div>
+        <div class="order-date">${date}</div>
+      </div>
+      <span class="status-badge" style="background:${st.color}22;color:${st.color}">${st.label}</span>
+      <div class="order-items">${items}</div>
+      <div class="order-footer">
+        <div>
+          <div class="order-total">R$ ${o.total}</div>
+          <div class="order-payment">${o.freteLabel||''} · ${o.payment?.toUpperCase()||''}</div>
+        </div>
+        <select class="status-select" onchange="updateStatus(${idx}, this.value)">${opts}</select>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.updateStatus = async (idx, newStatus) => {
+  const filtered = getFilteredOrders();
+  const order = filtered[idx];
+  if (!order) return;
+  const st = STATUS_OPTIONS.find(s => s.value === newStatus);
+  try {
+    await updateDoc(order._ref, { status: newStatus, statusLabel: st.label });
+    // Atualiza localmente
+    const globalIdx = allOrders.findIndex(o => o.id === order.id);
+    if (globalIdx >= 0) {
+      allOrders[globalIdx].status = newStatus;
+      allOrders[globalIdx].statusLabel = st.label;
+    }
+    renderStats();
+    renderOrders();
+  } catch(e) {
+    alert('Erro ao atualizar: ' + e.message);
+  }
+};
+
+function getFilteredOrders() {
+  const search = (document.getElementById('searchInput').value || '').toLowerCase();
+  let orders = allOrders;
+  if (currentFilter !== 'all') orders = orders.filter(o => o.status === currentFilter);
+  if (search) orders = orders.filter(o =>
+    (o.id||'').toLowerCase().includes(search) ||
+    (o.customerName||'').toLowerCase().includes(search) ||
+    (o.customerEmail||'').toLowerCase().includes(search) ||
+    (o.items||[]).some(i => i.club?.toLowerCase().includes(search) || i.name?.toLowerCase().includes(search))
+  );
+  return orders;
+}
+</script>
+</body>
+</html>
