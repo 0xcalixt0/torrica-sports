@@ -3308,10 +3308,17 @@ function showToast(product, size) {
   const detail  = document.getElementById('toastDetail');
   const prog    = document.getElementById('toastProgress');
 
-  thumb.style.background = `linear-gradient(135deg,${product.color1 || '#333'},${product.color2 || '#555'})`;
-  thumb.textContent = '⚽';
+  // Mostra foto real se disponível, senão gradiente
+  const imgs = getImages(product);
+  if (imgs[0]) {
+    thumb.style.background = `linear-gradient(135deg,${product.color1||'#333'},${product.color2||'#555'})`;
+    thumb.innerHTML = `<img src="${imgs[0]}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:3px;" onerror="this.style.display='none'">`;
+  } else {
+    thumb.style.background = `linear-gradient(135deg,${product.color1||'#333'},${product.color2||'#555'})`;
+    thumb.innerHTML = '⚽';
+  }
 
-  name.textContent = product.name;
+  name.textContent = `${product.club} — ${product.name}`;
 
   const count = cart.reduce((a, b) => a + b.qty, 0);
   const detailParts = [`Tam. ${size}`, `${count} ${count === 1 ? 'item' : 'itens'} no carrinho`];
@@ -3319,13 +3326,11 @@ function showToast(product, size) {
 
   // Reinicia animação de progresso
   prog.style.animation = 'none';
-  prog.offsetHeight; // reflow forçado
+  prog.offsetHeight;
   prog.style.animation = 'toastProgress 3.5s linear forwards';
 
-  // Mostra o toast
   toast.classList.add('show');
 
-  // Auto-ocultar após 3.5s
   if (toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(hideToast, 3500);
 }
